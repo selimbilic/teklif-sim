@@ -1,0 +1,21 @@
+From: engineering-leads@flagshipair.com
+To: modifications@aerodesign.com
+Subject: Request for Quotation: B737-800 Fleet Cabin Seats Refit
+
+Dear AeroDesign Team,
+
+We are looking to upgrade the cabin interiors of 5 of our Boeing 737-800 aircraft.
+Specifically, we want to replace the current economy class seats with new slimline passenger seats. 
+
+Our internal engineering team has performed an initial assessment and estimated the following workload requirements:
+- Cabin Design Engineering: 80 hours (for layout, seat track analysis, and LOPA update)
+- Structural Engineering: 40 hours (for floor load verification and attachment checks)
+- Certification & Documentation: 20 hours (for SB drafting and EASA Form 1 approvals)
+- Project Management: 10 hours
+
+Please provide an itemized quote for this engineering design package. As we are your flagship customer, we expect a competitive offer under our flagship pricing agreement.
+
+Best regards,
+
+John Doe
+Lead Cabin Engineer, Flagship Air

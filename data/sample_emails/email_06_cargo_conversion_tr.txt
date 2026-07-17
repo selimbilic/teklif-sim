@@ -1,0 +1,20 @@
+Kimden: cargo-ops@mnglines.com
+Kime: engineering@aerodesign.com
+Konu: Teklif Talebi: A330-200 Kargo Dönüşümü (P2F) Mühendislik Çalışması
+
+Sayın İlgili,
+
+Şirketimiz bünyesindeki uçağımızın kargo uçağına (P2F - Passenger to Freighter) dönüştürülmesi için gereken mühendislik tasarım ve sertifikasyon hizmetleri hakkında bir teklif almak istiyoruz. Uçak tipimiz Airbus A330-200'dir. Toplamda 1 adet uçağımız dönüştürülecektir.
+
+Bu büyük kapsamlı proje için öngördüğümüz mühendislik iş kırılımı şu şekildedir:
+- Yapısal Tasarım Mühendisliği: 800 saat (ana kargo kapısı kesimi, zemin güçlendirme)
+- Kabin Tasarım Mühendisliği: 200 saat (bariyer ağları, kargo yükleme sistemleri)
+- Sertifikasyon Mühendisliği: 150 saat (EASA STC süreci)
+- Proje Yönetimi: 80 saat
+
+Biz üçüncü taraf (third party) bir kargo operatörüyüz. Lütfen bu çalışma için detaylı ve kalem kalem dökülmüş fiyat teklifinizi iletiniz.
+
+İyi çalışmalar,
+
+Mustafa Demir
+Teknik Müdür, MNG Cargo Lines

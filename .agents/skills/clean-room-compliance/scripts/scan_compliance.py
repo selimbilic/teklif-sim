@@ -12,7 +12,7 @@ BLACKLIST = [
 ]
 
 # Paths to scan, relative to the project root (C:\Users\mseli\teklif-sim)
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
 # Directories/files to exclude from scanning
 EXCLUDE_DIRS = [".git", ".venv", "__pycache__", "node_modules", ".agents"]
