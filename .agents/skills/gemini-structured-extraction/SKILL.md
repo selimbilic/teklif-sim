@@ -15,6 +15,13 @@ from google import genai
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
 
+class ManhourBreakdown(BaseModel):
+    cabin_design_engineer: Optional[float] = Field(description="Hours for cabin design engineer")
+    structural_engineer: Optional[float] = Field(description="Hours for structural engineer")
+    avionics_design_engineer: Optional[float] = Field(description="Hours for avionics design engineer")
+    certification_engineer: Optional[float] = Field(description="Hours for certification engineer")
+    project_manager: Optional[float] = Field(description="Hours for project manager")
+
 class EmailExtraction(BaseModel):
     aircraft_type: Optional[str] = Field(description="Aircraft model, e.g. A320, B737-800")
     customer_name: Optional[str] = Field(description="Airline or customer name")
@@ -22,7 +29,7 @@ class EmailExtraction(BaseModel):
     modification_type: Optional[str] = Field(description="cabin, structural, or avionics")
     scope: Optional[str] = Field(description="Detailed scope description")
     fleet_size: Optional[int] = Field(description="Number of aircraft to modify")
-    manhours: Optional[Dict[str, float]] = Field(description="Map of role name to estimated hours")
+    manhours: Optional[ManhourBreakdown] = Field(description="Engineering manhours breakdown per role")
     is_valid: bool = Field(description="Set to false if email is spam or completely unrelated to aviation modification projects")
 ```
 
@@ -41,7 +48,7 @@ config = types.GenerateContentConfig(
 )
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',  # Default recommended model
+    model='gemini-3.5-flash',  # Default recommended model
     contents=email_text,
     config=config
 )
