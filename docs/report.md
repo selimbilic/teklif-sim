@@ -24,9 +24,9 @@ graph TD
 ```
 
 ### Modül Sorumlulukları
-1. **`extract.py` (Gemini 3.5 Flash):** E-posta metninden uçak modeli, havayolu adı, modifikasyon türü ve adam-saat kırılımları gibi yapısal olguları Pydantic şeması kullanarak çıkarır.
+1. **`extract.py` (Gemini 3.1 Flash Lite):** E-posta metninden uçak modeli, havayolu adı, modifikasyon türü ve adam-saat kırılımları gibi yapısal olguları Pydantic şeması kullanarak çıkarır.
 2. **`gaps.py` (Pure Python):** Fiyatlandırma için kritik 5 alanın eksikliğini denetleyen kurallar modülüdür. LLM içermez.
-3. **`draft_email.py` (Gemini 3.5 Flash + Fallback):** Eksik alanları müşteriden talep eden iki dilli (TR/EN) e-posta yazar. Gemini API kapalıyken yerel şablon doldurur (fallback).
+3. **`draft_email.py` (Gemini 3.1 Flash Lite + Fallback):** Eksik alanları müşteriden talep eden iki dilli (TR/EN) e-posta yazar. Gemini API kapalıyken yerel şablon doldurur (fallback).
 4. **`pricing.py` (Pure Python):** Labor kartı ve kâr marjı kurallarını uygulayarak deterministik fiyat hesaplaması yapar. **Kesinlikle LLM içermez.**
 5. **`summarize.py` (Pure Python):** Tüm bilgileri, tabloları ve fiyat tekliflerini tek sayfalık markdown formatında özetler.
 
@@ -67,7 +67,7 @@ Aynı girdinin 50 kez ardışık çalıştırılması sonucu her zaman kuruşu k
 ## 4. 10 Dakikalık Demo Sunumu Planı (Demo Outline)
 
 1. **Giriş ve Proje Amacı (1.5 Dakika):** Uçak modifikasyon teklifi hazırlama sürecinin tanıtılması ve clean-room sentetik veri yapısı.
-2. **Mimari ve Güvenlik (2 Dakika):** LLM çıkarma (Gemini 3.5 Flash) ile deterministik kodun (`pricing.py`) birbirinden nasıl kesin sınırlarla ayrıldığının AST testleriyle gösterilmesi.
+2. **Mimari ve Güvenlik (2 Dakika):** LLM çıkarma (Gemini 3.1 Flash Lite) ile deterministik kodun (`pricing.py`) birbirinden nasıl kesin sınırlarla ayrıldığının AST testleriyle gösterilmesi.
 3. **Eksik Bilgi ve Fallback Gösterimi (2.5 Dakika):** Eksik bilgili bir e-posta girildiğinde dinamik olarak üretilen Türkçe/İngilizce taslak e-postalar ve API kesintisi durumunda çalışan yerel fallback mekanizması.
 4. **Fiyatlandırma Motoru ve TDD (2 Dakika):** `pytest` yeşil test suite ve testlerin yazılım sürecinde yakaladığı float hassasiyet / Türkçe karakter bugları.
 5. **Soru-Cevap & Kapanış (2 Dakika).**

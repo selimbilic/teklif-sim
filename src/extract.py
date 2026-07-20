@@ -96,7 +96,7 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
-                model='gemini-3.5-flash',
+                model='gemini-3.1-flash-lite',
                 contents=email_text,
                 config=config
             )

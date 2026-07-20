@@ -108,7 +108,7 @@ def draft_clarification_email(original_email: str, missing_fields: List[str], la
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,

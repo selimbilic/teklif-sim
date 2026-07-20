@@ -19,9 +19,9 @@ def test_connection():
         # Initialize Client. It will auto-detect GEMINI_API_KEY from environment variables
         client = genai.Client()
         
-        print("[*] Sending request to Gemini (gemini-3.5-flash)...")
+        print("[*] Sending request to Gemini (gemini-3.1-flash-lite)...")
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-3.1-flash-lite',
             contents='Respond in one short sentence to confirm your connection is successful.',
         )
         print(f"[+] Response from LLM: {response.text.strip()}")

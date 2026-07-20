@@ -48,7 +48,7 @@ config = types.GenerateContentConfig(
 )
 
 response = client.models.generate_content(
-    model='gemini-3.5-flash',  # Default recommended model
+    model='gemini-3.1-flash-lite',  # Default recommended model
     contents=email_text,
     config=config
 )
