@@ -1,4 +1,8 @@
 import os
+import sys
+# Add project root directory to sys.path to resolve ModuleNotFoundError in Streamlit
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import streamlit as st
 from src.extract import extract_facts
 from src.gaps import check_gaps
