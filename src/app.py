@@ -23,12 +23,15 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* Google Fonts import */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
     /* Global background & text */
+    header[data-testid="stHeader"] {
+        background-color: #f8fafc !important;
+    }
     .stApp {
-        background-color: #f8fafc;
-        color: #0f172a;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
     
@@ -71,14 +74,14 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
     }
     .metric-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #64748b;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     .metric-value {
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: #0f172a;
         margin-top: 0.25rem;
@@ -93,8 +96,64 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         margin-bottom: 1rem;
     }
+
+    /* Force Light Theme on Streamlit Input Widgets */
+    .stTextArea label p, .stSelectbox label p, .stSlider label p, .stRadio label p {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
     
-    /* Buttons */
+    .stTextArea > div > div > textarea {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        font-family: 'Fira Code', monospace !important;
+        font-size: 0.88rem !important;
+        line-height: 1.4 !important;
+    }
+    .stTextArea > div > div > textarea:focus {
+        border-color: #c8102e !important;
+        box-shadow: 0 0 0 1px #c8102e !important;
+    }
+
+    div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+    }
+    div[data-baseweb="select"] span {
+        color: #0f172a !important;
+        font-weight: 500 !important;
+    }
+    div[data-baseweb="popover"] ul {
+        background-color: #ffffff !important;
+    }
+    div[data-baseweb="popover"] li {
+        color: #0f172a !important;
+    }
+
+    /* Tabs Styling */
+    div[data-baseweb="tab-list"] {
+        background-color: transparent !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        gap: 1rem !important;
+    }
+    button[data-baseweb="tab"] {
+        background-color: transparent !important;
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding: 0.5rem 0.75rem !important;
+        border: none !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #c8102e !important;
+        border-bottom: 3px solid #c8102e !important;
+    }
+
+    /* Primary Action Buttons */
     div.stButton > button {
         background-color: #c8102e !important;
         color: #ffffff !important;
@@ -109,16 +168,21 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25) !important;
     }
     
-    /* Preset pills */
-    .preset-btn {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: #0f172a;
-        border-radius: 20px;
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
+    /* Preset Scenario Pill Buttons Overrides */
+    div[data-testid="stHorizontalBlock"] button {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.6rem !important;
+        border-radius: 6px !important;
+        font-weight: 500 !important;
+    }
+    div[data-testid="stHorizontalBlock"] button:hover {
+        border-color: #c8102e !important;
+        color: #c8102e !important;
+        background-color: #fef2f2 !important;
     }
     
     /* Status banners */
