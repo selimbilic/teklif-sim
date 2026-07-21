@@ -189,9 +189,27 @@ col_input, col_dashboard = st.columns([1, 1])
 with col_input:
     st.markdown("##### 📧 Customer Request Email")
     
+    sample_dir = os.path.join(os.path.dirname(__file__), "..", "data", "sample_emails")
+    sample_files = []
+    if os.path.exists(sample_dir):
+        sample_files = sorted([f for f in os.listdir(sample_dir) if f.endswith(".txt")])
+        
+    selected_sample = st.selectbox(
+        "📂 Load Preset Sample Email (01 - 20):",
+        options=["-- Custom / Blank Input --"] + sample_files,
+        key="sb_sample_email"
+    )
+    
+    default_text = ""
+    if selected_sample != "-- Custom / Blank Input --":
+        sample_path = os.path.join(sample_dir, selected_sample)
+        if os.path.exists(sample_path):
+            with open(sample_path, "r", encoding="utf-8") as f:
+                default_text = f.read()
+    
     email_input = st.text_area(
-        "Paste the customer's modification inquiry email below:",
-        value="",
+        "Paste or edit customer modification inquiry email below:",
+        value=default_text,
         height=240,
         placeholder="Paste customer email text here...",
         key="main_email_textarea"

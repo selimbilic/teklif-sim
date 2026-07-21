@@ -1,0 +1,50 @@
+From: Mehmet Yılmaz <mehmet.yilmaz@caspianairways.az>
+To: proposals@designhaus-aero.com
+Date: Mon, 14 Jul 2026 11:18:42 +0400
+Subject: A330-300 Galley Yenileme Projesi — Teklif Talebi
+
+Sayın DesignHaus Aero Ekibi,
+
+Caspian Airways Teknik Direktörü olarak sizlere A330-300 uçağımıza yönelik forward galley yenileme projemiz hakkında yazıyorum.
+
+PROJE TANIMI
+
+Mevcut ön galley ünitesinin komple sökülmesi ve yeni nesil bir galley sistemiyle değiştirilmesini planlıyoruz. Projenin ana kapsam maddeleri şu şekildedir:
+
+  - Mevcut forward galley ünitesinin sökümü ve bertarafı
+  - Yeni galley ünitesi tedarik ve montajı
+  - Yeni nesil oven üniteleri (konveksiyonlu) kurulumu
+  - Coffee maker ünitelerinin yenilenmesi
+  - Su sistemi modifikasyonu (besleme hatları, drenaj, filtre üniteleri)
+  - İlgili elektrik ve yapısal arayüz işleri
+  - Zemin paneli ve çevre panellerinin uyumlandırılması
+
+UÇAK BİLGİSİ
+
+  - Tip: Airbus A330-300
+  - Mevcut galley konfigürasyonu: Standart forward galley (tam donanımlı)
+
+ADAM-SAAT TAHMİNİ
+
+Kendi ön değerlendirmemize göre tahmini adam-saat dağılımı aşağıdaki gibidir:
+
+  - Kabin işleri:       120 adam-saat
+  - Yapısal işler:       60 adam-saat
+  - Dokümantasyon:        30 adam-saat
+  - Proje yönetimi:       15 adam-saat
+  - TOPLAM:             225 adam-saat (yaklaşık)
+
+Bu rakamlar elbette ön tahmin niteliğindedir; nihai değerlendirmenizi bekliyoruz.
+
+Teklifinizde NRE ve uçak başına tekrarlayan maliyet tahminlerinizi, malzeme temin sürelerini ve önerdiğiniz proje takvimini görmeyi arzuluyoruz. Ayrıca daha önce gerçekleştirdiğiniz benzer galley modifikasyon projelerine ilişkin referans bilgisi paylaşabilirseniz memnun oluruz.
+
+Detayları görüşmek üzere bir telefon veya video görüşme ayarlayabiliriz.
+
+Saygılarımla,
+
+Mehmet Yılmaz
+Teknik Direktör
+Caspian Airways
+mehmet.yilmaz@caspianairways.az
+Tel: +994 12 497 30 00
+Bakü, Azerbaycan

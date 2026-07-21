@@ -1,0 +1,105 @@
+From: "Dr. Elena Papadopoulos" <elena.p@aegeanstar.gr>
+To: proposals@designhaus-aero.com
+Date: Thu, 17 Jul 2026 08:30:15 +0300
+Subject: B787-9 Cockpit Avionics Suite Upgrade — Request for Quotation
+
+Dear DesignHaus Aero Proposals Team,
+
+I am Dr. Elena Papadopoulos, Chief Engineer at Aegean Star Aviation. We are preparing a comprehensive cockpit avionics modernisation programme for our Boeing 787-9 Dreamliner fleet and would like to invite DesignHaus Aero to submit a formal quotation.
+
+1. AIRCRAFT & FLEET DETAILS
+
+   - Aircraft type: Boeing 787-9 Dreamliner
+   - Engine: General Electric GEnx-1B
+   - Fleet size: 4 aircraft (MSN 62401, 62402, 62403, 62404)
+   - Current avionics baseline: OEM delivery standard (2019 build)
+
+2. SCOPE OF WORK
+
+   The upgrade programme encompasses the following work packages:
+
+   2.1 Head-Up Display (HUD) Installation
+       - Dual HUD system (Captain and First Officer positions)
+       - Combiner glass assemblies, overhead mounting structure
+       - HUD computer and symbol generator integration
+       - Flight guidance coupling to existing autopilot system
+
+   2.2 Electronic Flight Bag (EFB) Integration
+       - Class 3 EFB installation (fixed-mount tablets)
+       - Integration with aircraft data bus (ARINC 429 / AFDX)
+       - Terrain database and electronic chart display capability
+       - Power supply and data interface wiring
+
+   2.3 Weather Radar Replacement
+       - Removal of existing weather radar unit
+       - Installation of new multi-scan phased-array weather radar
+       - Radome inspection and modification if required
+       - Antenna and receiver/transmitter unit installation
+
+   2.4 Instrument Panel Rewiring
+       - Complete rewire of the main instrument panel and glareshield
+       - Replacement of obsolete wiring harnesses
+       - New circuit breaker panel layout to accommodate added systems
+       - EMI/EMC testing and compliance verification
+
+   2.5 Documentation & Certification
+       - Full engineering documentation package:
+         * Supplemental Type Certificate (STC) application and approval
+         * Service Bulletin (SB)
+         * Illustrated Parts Catalogue (IPC) updates
+         * Aircraft Flight Manual (AFM) supplement
+         * Master Minimum Equipment List (MMEL) updates
+         * Wiring diagram manual revisions
+       - Certification basis: EASA Part 21J (Design Organisation Approval)
+       - All compliance demonstration activities (test plans, test reports, conformity inspections)
+
+3. TIMELINE
+
+   - Programme kick-off: June 2027
+   - Aircraft delivery interval: 3-month intervals (i.e., Aircraft 1 in June 2027, Aircraft 2 in September 2027, Aircraft 3 in December 2027, Aircraft 4 in March 2028)
+   - We expect the NRE phase (engineering, prototyping, certification) to be completed before the first aircraft induction
+
+4. BUDGET
+
+   - Maximum budget: USD 2,000,000 per aircraft (recurring cost, excluding NRE)
+   - NRE budget to be proposed separately; we are open to discussion
+   - Payment milestones to be agreed upon contract signature
+
+5. CERTIFICATION AUTHORITY
+
+   - Primary certification: EASA Part 21J
+   - We will require the STC to be EASA-approved
+   - Validation with HCAA (Hellenic Civil Aviation Authority) will be managed on our side, though we may request your support for technical queries
+
+6. PROPOSAL REQUIREMENTS
+
+   Please include the following in your quotation:
+
+   - Detailed technical proposal with work breakdown structure (WBS)
+   - NRE cost breakdown (engineering, certification, tooling, prototyping)
+   - Recurring cost per aircraft (labour, materials, documentation)
+   - Man-hour estimate per aircraft by discipline
+   - Risk assessment and mitigation plan
+   - Preliminary project schedule with milestones
+   - Team composition and key personnel CVs
+   - Relevant experience and reference projects (B787 preferred)
+   - Quality assurance and configuration management approach
+
+7. PROPOSAL DEADLINE
+
+   We kindly request your proposal no later than 15 September 2026. We plan to complete the vendor evaluation by end of October 2026 and award the contract in November 2026.
+
+Should you require any additional technical data, aircraft records, or clarification, please do not hesitate to contact me directly. We are also happy to host a site visit or technical workshop at our MRO facility in Athens.
+
+We look forward to a productive collaboration.
+
+With best regards,
+
+Dr. Elena Papadopoulos
+Chief Engineer
+Aegean Star Aviation
+elena.p@aegeanstar.gr
+Tel: +30 210 668 4200
+Mobile: +30 694 712 3300
+Athens International Airport
+Spata, 190 04, Greece
