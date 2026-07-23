@@ -1,8 +1,9 @@
 import os
 import csv
 import json
-from typing import Dict, Union, Any
+from typing import Dict, Union, Any, Optional
 from pydantic import BaseModel
+from src.estimation import estimate_manhours, ManhourEstimate
 
 def load_data_files():
     """
@@ -47,21 +48,44 @@ def load_data_files():
     return rates, customer_classes
 
 def calculate_quote(
-    manhours: Union[Dict[str, float], Any], 
+    manhours: Union[Dict[str, float], Any, None], 
     customer_class: str, 
     strategy_string: str, 
-    fleet_size: int = 1
-) -> Dict[str, float]:
+    fleet_size: int = 1,
+    modification_type: Optional[str] = "cabin",
+    complexity: Optional[str] = "standard",
+    scope_text: Optional[str] = None
+) -> Dict[str, Any]:
     """
     Calculates an itemized quote for an aircraft modification project.
-    
-    This function is completely deterministic and contains no LLM calls.
+    If manhours are provided by customer, uses customer hours.
+    Otherwise, uses AeroDesign DOA Estimation Engine to deterministically calculate manhours.
     """
-    # 1. Convert Pydantic model to dictionary if necessary
+    manhour_source = "Customer Provided"
+    manhours_dict = {}
+
     if isinstance(manhours, BaseModel):
         manhours_dict = manhours.model_dump()
-    else:
+    elif isinstance(manhours, dict):
         manhours_dict = dict(manhours)
+
+    # 1. Validate inputs (check for negative hours first)
+    for role, hours in manhours_dict.items():
+        if hours is not None and hours < 0:
+            raise ValueError(f"manhours for '{role}' cannot be negative: {hours}")
+
+    # Check if customer provided valid non-zero hours
+    has_customer_hours = any(v is not None and v > 0 for v in manhours_dict.values()) if manhours_dict else False
+
+    if not has_customer_hours:
+        manhour_source = "DOA Estimation Engine"
+        est = estimate_manhours(
+            modification_type=modification_type,
+            complexity=complexity,
+            fleet_size=fleet_size,
+            scope_text=scope_text
+        )
+        manhours_dict = est.model_dump()
 
     # 2. Validate inputs
     for role, hours in manhours_dict.items():
@@ -112,6 +136,8 @@ def calculate_quote(
     )
 
     return {
+        "manhour_source": manhour_source,
+        "manhours_used": manhours_dict,
         "base_labor_cost": round(base_labor_cost, 2),
         "margin_applied": margin_applied,
         "margin_amount": margin_amount,

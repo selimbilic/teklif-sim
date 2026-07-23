@@ -188,7 +188,7 @@ def test_unknown_customer_class():
     with pytest.raises(ValueError, match="Unknown customer class"):
         calculate_quote(manhours, "unknown_class", "cheapest")
 
-# Edge Case 11: Boş saat sözlüğü
+# Edge Case 11: Boş saat sözlüğü -> DOA Tahmin Motoru otomatik devreye girer
 def test_empty_manhours():
     quote = calculate_quote(
         manhours={},
@@ -196,7 +196,6 @@ def test_empty_manhours():
         strategy_string="cheapest",
         fleet_size=1
     )
-    assert quote["base_labor_cost"] == 0.00
-    assert quote["margin_amount"] == 0.00
-    assert quote["contingency"] == 0.00
-    assert quote["total_cost"] == 2000.00 # testing_fee (1500) + material (500)
+    assert quote["manhour_source"] == "DOA Estimation Engine"
+    assert quote["base_labor_cost"] > 0.00
+    assert quote["total_cost"] > 0.00

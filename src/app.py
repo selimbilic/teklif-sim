@@ -243,18 +243,24 @@ with col_dashboard:
                 # 3. Calculate Base Quote
                 fleet_sz = facts.fleet_size if (facts.fleet_size and facts.fleet_size > 0) else 1
                 manhours_dict = facts.manhours.model_dump() if facts.manhours else {}
+                complexity_val = getattr(facts, "complexity", "standard") or "standard"
                 
-                # Base calculation
+                # Base calculation (falls back to DOA Estimation Engine if customer manhours are empty)
                 base_quote = calculate_quote(
                     manhours=manhours_dict,
                     customer_class=c_class,
                     strategy_string=pricing_strategy,
-                    fleet_size=fleet_sz
+                    fleet_size=fleet_sz,
+                    modification_type=facts.modification_type,
+                    complexity=complexity_val,
+                    scope_text=facts.scope
                 )
                 
-                # Render 4 Executive KPI Cards
-                total_hours = sum([v for v in manhours_dict.values() if v is not None])
+                mh_used = base_quote["manhours_used"]
+                mh_source = base_quote["manhour_source"]
+                total_hours = sum([v for v in mh_used.values() if v is not None])
                 
+                # Render 4 Executive KPI Cards
                 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
                 with kpi1:
                     st.markdown(f"""
@@ -266,7 +272,7 @@ with col_dashboard:
                 with kpi2:
                     st.markdown(f"""
                     <div class="metric-card">
-                        <div class="metric-label">Manhours</div>
+                        <div class="metric-label">Manhours ({'DOA Est.' if 'DOA' in mh_source else 'Customer'})</div>
                         <div class="metric-value">{total_hours:.0f} hrs</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -320,6 +326,18 @@ with col_dashboard:
                         st.write(f"**Mod Category:** `{facts.modification_type or 'N/A'}`")
                         st.write(f"**Fleet Size:** {facts.fleet_size or 'N/A'}")
                         st.write(f"**Scope:** {facts.scope or 'N/A'}")
+                    
+                    st.markdown("---")
+                    st.markdown(f"###### ⏱️ Engineering Manhour Allocation (`{mh_source}`):")
+                    mh_col1, mh_col2 = st.columns(2)
+                    with mh_col1:
+                        st.write(f"- **Cabin Design Engineer:** {mh_used.get('cabin_design_engineer', 0):.1f} hrs")
+                        st.write(f"- **Structural Engineer:** {mh_used.get('structural_engineer', 0):.1f} hrs")
+                        st.write(f"- **Avionics Design Engineer:** {mh_used.get('avionics_design_engineer', 0):.1f} hrs")
+                    with mh_col2:
+                        st.write(f"- **Certification Engineer:** {mh_used.get('certification_engineer', 0):.1f} hrs")
+                        st.write(f"- **Project Manager:** {mh_used.get('project_manager', 0):.1f} hrs")
+                        st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")
                         
                     if gaps:
                         st.markdown("---")

@@ -38,7 +38,11 @@ class EmailExtraction(BaseModel):
     )
     scope: Optional[str] = Field(
         None, 
-        description="A short summary of the modification scope of work."
+        description="A detailed summary of the modification scope of work. Set to None if scope is completely missing or vague."
+    )
+    complexity: Optional[str] = Field(
+        "standard",
+        description="Complexity level of modification work: 'minor' (small repair/swap), 'standard' (refit/installation), or 'major' (STC/cargo conversion/full overhaul)."
     )
     fleet_size: Optional[int] = Field(
         None, 
@@ -46,7 +50,7 @@ class EmailExtraction(BaseModel):
     )
     manhours: Optional[ManhourBreakdown] = Field(
         None, 
-        description="Engineering manhours breakdown per role. Set to None if no hours are specified."
+        description="Engineering manhours breakdown per role if explicitly specified by customer in email. Set to None if no hours are specified."
     )
     is_valid: bool = Field(
         ..., 

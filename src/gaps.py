@@ -6,12 +6,14 @@ REQUIRED_FIELDS = {
     "fleet_size": "Fleet Size (number of aircraft)",
     "modification_type": "Modification Type (cabin, structural, avionics)",
     "customer_name": "Customer Airline Name",
-    "manhours": "Estimated Engineering Manhours Breakdown"
+    "scope": "Modification Scope Details"
 }
 
 def check_gaps(facts: Union[EmailExtraction, dict]) -> List[str]:
     """
     Checks the extracted facts for missing fields required to generate a proposal.
+    Note: Customer-provided manhours is NO LONGER a required field, as AeroDesign
+    DOA Estimation Engine automatically estimates man-hours from scope parameters.
     Returns a list of missing field keys.
     """
     missing_fields = []
@@ -31,9 +33,11 @@ def check_gaps(facts: Union[EmailExtraction, dict]) -> List[str]:
             missing_fields.append(field)
         elif isinstance(val, str) and not val.strip():
             missing_fields.append(field)
-        elif isinstance(val, dict) and not val:
-            # If manhours is an empty dict
-            missing_fields.append(field)
+        elif field == "scope" and isinstance(val, str):
+            # Flag vague scope statements
+            vague_keywords = ["vague", "some modification", "need price", "general check", "unspecified"]
+            if any(k in val.lower() for k in vague_keywords):
+                missing_fields.append(field)
             
     return missing_fields
 
