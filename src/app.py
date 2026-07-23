@@ -331,12 +331,12 @@ with col_dashboard:
                     st.markdown(f"###### ⏱️ Engineering Manhour Allocation (`{mh_source}`):")
                     mh_col1, mh_col2 = st.columns(2)
                     with mh_col1:
-                        st.write(f"- **Cabin Design Engineer:** {mh_used.get('cabin_design_engineer', 0):.1f} hrs")
-                        st.write(f"- **Structural Engineer:** {mh_used.get('structural_engineer', 0):.1f} hrs")
-                        st.write(f"- **Avionics Design Engineer:** {mh_used.get('avionics_design_engineer', 0):.1f} hrs")
+                        st.write(f"- **Cabin Design Engineer:** {(mh_used.get('cabin_design_engineer') or 0.0):.1f} hrs")
+                        st.write(f"- **Structural Engineer:** {(mh_used.get('structural_engineer') or 0.0):.1f} hrs")
+                        st.write(f"- **Avionics Design Engineer:** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
                     with mh_col2:
-                        st.write(f"- **Certification Engineer:** {mh_used.get('certification_engineer', 0):.1f} hrs")
-                        st.write(f"- **Project Manager:** {mh_used.get('project_manager', 0):.1f} hrs")
+                        st.write(f"- **Certification Engineer:** {(mh_used.get('certification_engineer') or 0.0):.1f} hrs")
+                        st.write(f"- **Project Manager:** {(mh_used.get('project_manager') or 0.0):.1f} hrs")
                         st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")
                         
                     if gaps:
