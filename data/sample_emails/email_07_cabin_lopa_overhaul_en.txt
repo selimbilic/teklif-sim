@@ -1,0 +1,29 @@
+From: fleet@flagshipair.com
+To: proposals@aerodesign.com
+Date: Mon, 20 Jul 2026 13:00:00 +0300
+Subject: Full Cabin LOPA Reconfiguration - 3x Airbus A350-900
+
+Dear AeroDesign,
+
+Flagship Air requires a complete cabin layout (LOPA) overhaul proposal for 3 Airbus A350-900 aircraft.
+
+Modification Scope:
+- Reconfiguration from 3-class to high-density 2-class layout (Business & Economy).
+- Relocation of passenger service units (PSU), lavatory partitions, and emergency equipment.
+- Dynamic seat testing substantiation per CS 25.561 / CS 25.562 (16g loads).
+- Full EASA Part 21 Major Modification approval package.
+
+Estimated Engineering Hours:
+- Cabin Design Engineer: 220 hours
+- Structural Engineer: 110 hours
+- Avionics Design Engineer: 35 hours
+- Certification Engineer: 75 hours
+- Project Manager: 45 hours
+
+Please send your formal cost breakdown.
+
+Best regards,
+
+Elena Rostova
+Cabin Modifications Manager
+Flagship Air

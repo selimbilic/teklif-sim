@@ -1,0 +1,26 @@
+From: muhendislik@nordictransport.com
+To: teklif@aerodesign.com
+Date: Fri, 24 Jul 2026 08:00:00 +0300
+Subject: Yapısal Hasar Tamir Tasarımı - 1x Boeing 777-300ER
+
+Merhaba AeroDesign,
+
+Nordic Transport bünyesindeki 1 adet Boeing 777-300ER uçağımızın Door 2R çevresinde oluşan gövde kaplaması çentiği için EASA Part 21 Tamir Tasarımı (Structural Repair) gerekmektedir.
+
+Detaylar:
+- Gövde dış kaplaması için iç takviye plakası (doubler plate) tasarımı.
+- Statik mukavemet ve yorulma/hasar toleransı analiz raporu.
+- EASA Part 21 Minor Repair onay paketi.
+
+Adam/Saat Hesabı:
+- Yapısal Mühendis: 130 saat
+- Sertifikasyon Mühendisi: 35 saat
+- Proje Yöneticisi: 15 saat
+
+Teklifinizi ivedilikle iletmenizi rica ederiz.
+
+Saygılarımızla,
+
+Erik Lindqvist
+Kıdemli Yapısal Mühendis
+Nordic Transport

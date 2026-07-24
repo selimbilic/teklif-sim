@@ -1,0 +1,15 @@
+From: ops@anatoliacargo.com
+To: proposals@aerodesign.com
+Date: Thu, 23 Jul 2026 11:45:00 +0300
+Subject: Wi-Fi system installation cost enquiry
+
+Hi AeroDesign,
+
+We are looking to install Wi-Fi connectivity systems on our cargo planes so our flight crew can access real-time weather and flight planning data.
+
+Can you give us a ballpark estimate for how much this modification will cost and what certification documents are required?
+
+Thanks,
+
+Anatolia Cargo Operations
+ops@anatoliacargo.com

@@ -1,0 +1,30 @@
+From: engineering@flagshipair.com
+To: proposals@aerodesign.com
+Date: Wed, 22 Jul 2026 10:15:00 +0300
+Subject: RFP: IFC Satellite Wi-Fi Antenna STC Modification for 6x B737-800
+
+Dear AeroDesign Engineering Team,
+
+Flagship Air is requesting a formal engineering quote for the turnkey Design Organisation Approval (DOA) package to install an In-Flight Connectivity (IFC) Satellite Wi-Fi antenna system across our fleet of 6 Boeing 737-800 aircraft.
+
+Scope of Work:
+1. Structural cutout and external crown radome doubler plate design on fuselage.
+2. Installation of internal Wireless Access Points (WAPs) and main server rack in electronics bay.
+3. ARINC 429 and Ethernet wiring routing.
+4. EASA Part 21 Major Change (STC) approval package under CS-25 certification basis.
+
+Requested Manhour Breakdown:
+- Cabin Design Engineer: 30 hours
+- Structural Engineer: 90 hours
+- Avionics Design Engineer: 140 hours
+- Certification Engineer: 45 hours
+- Project Manager: 30 hours
+
+Please provide your total itemized quote and timeline at your earliest convenience.
+
+Best regards,
+
+David Miller
+Director of Fleet Engineering
+Flagship Air
+david.miller@flagshipair.com

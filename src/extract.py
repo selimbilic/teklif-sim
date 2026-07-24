@@ -34,7 +34,19 @@ class EmailExtraction(BaseModel):
     )
     modification_type: Optional[str] = Field(
         None, 
-        description="Must be exactly one of: 'cabin', 'structural', or 'avionics'."
+        description="Must be exactly one of: 'cabin', 'structural', 'avionics', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', 'structural_repair'."
+    )
+    project_type: Optional[str] = Field(
+        None,
+        description="Specific project type if applicable: 'ife', 'ifc' (Wi-Fi), 'isps' (power), 'elams', 'gain' (galley), 'cabin_lopa', 'structural_repair', 'cargo_conversion'."
+    )
+    cert_basis: Optional[str] = Field(
+        None,
+        description="Certification Specification basis: 'CS-25' for large commercial transport aircraft (A320, B737, B777, etc.), 'CS-23' for small/general aviation aeroplanes (Cessna, King Air, etc.)."
+    )
+    dal_level: Optional[str] = Field(
+        None,
+        description="Design Assurance Level per ARP4761/DO-178C: 'DAL A', 'DAL B', 'DAL C', 'DAL D', or 'DAL E'. Default to DAL D or C for avionics/IFE/IFC if unspecified."
     )
     scope: Optional[str] = Field(
         None, 

@@ -10,6 +10,8 @@ from src.gaps import check_gaps, get_field_description
 from src.draft_email import draft_clarification_email
 from src.pricing import calculate_quote, load_data_files
 from src.summarize import generate_proposal_summary
+from src.__version__ import __version__
+from src.estimation import resolve_cert_basis, classify_part21_change
 
 # Set Streamlit Page Configuration
 st.set_page_config(
@@ -176,10 +178,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Compact Header
-st.markdown("""
-<div class="corporate-header">
-    <h1 class="header-title-text">AeroDesign Engineering Portal</h1>
-    <span style="color: #64748b; font-size: 0.85rem;">Aircraft Modification Proposal Assistant</span>
+st.markdown(f"""
+<div class="corporate-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="header-title-text" style="display: inline-block; margin-right: 10px;">AeroDesign Engineering Portal</h1>
+        <span style="color: #64748b; font-size: 0.85rem;">Aircraft Modification Proposal Assistant</span>
+    </div>
+    <span style="background-color: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; border: 1px solid #cbd5e1;">v{__version__}</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -240,25 +245,35 @@ with col_dashboard:
                 c_class = facts.customer_class if (facts.customer_class in customer_classes) else "third_party"
                 class_band = customer_classes[c_class]
                 
-                # 3. Calculate Base Quote
+                # 3. Calculate Base Quote (ONLY if no gaps exist)
                 fleet_sz = facts.fleet_size if (facts.fleet_size and facts.fleet_size > 0) else 1
                 manhours_dict = facts.manhours.model_dump() if facts.manhours else {}
                 complexity_val = getattr(facts, "complexity", "standard") or "standard"
                 
-                # Base calculation (falls back to DOA Estimation Engine if customer manhours are empty)
-                base_quote = calculate_quote(
-                    manhours=manhours_dict,
-                    customer_class=c_class,
-                    strategy_string=pricing_strategy,
-                    fleet_size=fleet_sz,
-                    modification_type=facts.modification_type,
-                    complexity=complexity_val,
-                    scope_text=facts.scope
-                )
-                
-                mh_used = base_quote["manhours_used"]
-                mh_source = base_quote["manhour_source"]
-                total_hours = sum([v for v in mh_used.values() if v is not None])
+                if not gaps:
+                    base_quote = calculate_quote(
+                        manhours=manhours_dict,
+                        customer_class=c_class,
+                        strategy_string=pricing_strategy,
+                        fleet_size=fleet_sz,
+                        modification_type=facts.modification_type,
+                        complexity=complexity_val,
+                        scope_text=facts.scope
+                    )
+                    mh_used = base_quote["manhours_used"]
+                    mh_source = base_quote["manhour_source"]
+                    total_hours = sum([v for v in mh_used.values() if v is not None])
+                    margin_pct_str = f"{base_quote['margin_applied']*100:.1f}%"
+                    total_quote_str = f"${base_quote['total_cost']:,.2f}"
+                    quote_color = "#c8102e"
+                else:
+                    base_quote = None
+                    mh_used = {}
+                    mh_source = "Pending Gaps"
+                    total_hours = 0.0
+                    margin_pct_str = "Pending Gaps"
+                    total_quote_str = "PENDING GAPS"
+                    quote_color = "#d97706"
                 
                 # Render 4 Executive KPI Cards
                 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
@@ -266,28 +281,28 @@ with col_dashboard:
                     st.markdown(f"""
                     <div class="metric-card">
                         <div class="metric-label">Aircraft / Fleet</div>
-                        <div class="metric-value">{facts.aircraft_type or 'N/A'} ({fleet_sz})</div>
+                        <div class="metric-value">{facts.aircraft_type or 'N/A'} ({facts.fleet_size or 'N/A'})</div>
                     </div>
                     """, unsafe_allow_html=True)
                 with kpi2:
                     st.markdown(f"""
                     <div class="metric-card">
-                        <div class="metric-label">Manhours ({'DOA Est.' if 'DOA' in mh_source else 'Customer'})</div>
-                        <div class="metric-value">{total_hours:.0f} hrs</div>
+                        <div class="metric-label">Manhours ({'DOA Est.' if 'DOA' in mh_source else ('Customer' if not gaps else 'Pending')})</div>
+                        <div class="metric-value">{"Pending Gaps" if gaps else f"{total_hours:.0f} hrs"}</div>
                     </div>
                     """, unsafe_allow_html=True)
                 with kpi3:
                     st.markdown(f"""
                     <div class="metric-card">
                         <div class="metric-label">Margin</div>
-                        <div class="metric-value">{base_quote['margin_applied']*100:.1f}%</div>
+                        <div class="metric-value">{margin_pct_str}</div>
                     </div>
                     """, unsafe_allow_html=True)
                 with kpi4:
                     st.markdown(f"""
                     <div class="metric-card">
                         <div class="metric-label">Total Quote</div>
-                        <div class="metric-value" style="color:#c8102e;">${base_quote['total_cost']:,.2f}</div>
+                        <div class="metric-value" style="color:{quote_color};">{total_quote_str}</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -297,7 +312,7 @@ with col_dashboard:
                 if gaps:
                     st.markdown(f"""
                     <div class="banner-warning">
-                        ⚠️ GAPS DETECTED: {len(gaps)} missing field(s) required to finalize proposal.
+                        ⚠️ GAPS DETECTED: {len(gaps)} missing field(s) required to generate a proposal. Pricing is locked until details are clarified.
                     </div>
                     """, unsafe_allow_html=True)
                 else:
@@ -316,114 +331,138 @@ with col_dashboard:
                 
                 # TAB 1: Facts & Gaps
                 with tab_facts:
-                    st.markdown("###### Extracted Request Metadata:")
+                    st.markdown("###### Extracted Request & Regulatory Metadata:")
+                    cert_basis = getattr(facts, "cert_basis", None) or resolve_cert_basis(facts.aircraft_type)
+                    part21_info = classify_part21_change(facts.scope, facts.modification_type or "", facts.complexity or "standard")
+                    dal_str = getattr(facts, "dal_level", None) or "DAL D"
+                    
                     f_col1, f_col2 = st.columns(2)
                     with f_col1:
                         st.write(f"**Airline:** {facts.customer_name or 'N/A'}")
                         st.write(f"**Class:** `{facts.customer_class or 'N/A'}`")
                         st.write(f"**Aircraft:** {facts.aircraft_type or 'N/A'}")
+                        st.write(f"**Cert Basis:** `{cert_basis}` (Fixed-Wing)")
                     with f_col2:
                         st.write(f"**Mod Category:** `{facts.modification_type or 'N/A'}`")
-                        st.write(f"**Fleet Size:** {facts.fleet_size or 'N/A'}")
+                        st.write(f"**EASA Part 21:** `{part21_info['clause']}`")
+                        st.write(f"**Safety DAL Level:** `{dal_str}`")
                         st.write(f"**Scope:** {facts.scope or 'N/A'}")
                     
-                    st.markdown("---")
-                    st.markdown(f"###### ⏱️ Engineering Manhour Allocation (`{mh_source}`):")
-                    mh_col1, mh_col2 = st.columns(2)
-                    with mh_col1:
-                        st.write(f"- **Cabin Design Engineer:** {(mh_used.get('cabin_design_engineer') or 0.0):.1f} hrs")
-                        st.write(f"- **Structural Engineer:** {(mh_used.get('structural_engineer') or 0.0):.1f} hrs")
-                        st.write(f"- **Avionics Design Engineer:** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
-                    with mh_col2:
-                        st.write(f"- **Certification Engineer:** {(mh_used.get('certification_engineer') or 0.0):.1f} hrs")
-                        st.write(f"- **Project Manager:** {(mh_used.get('project_manager') or 0.0):.1f} hrs")
-                        st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")
-                        
                     if gaps:
                         st.markdown("---")
-                        st.markdown("###### ⚠️ Missing Fields Checklist:")
+                        st.markdown("###### ⚠️ Missing Required Fields Checklist:")
                         for gap in gaps:
                             st.write(f"- ❌ **{gap}**: {get_field_description(gap)}")
                             
-                        st.markdown("###### ✉️ Draft Clarification Email:")
+                        st.markdown("###### ✉️ Draft Clarification Email (Send to Customer):")
                         draft_body = draft_clarification_email(
                             original_email=email_input,
                             missing_fields=gaps,
                             language=draft_lang
                         )
-                        st.text_area("Draft Reply to Customer:", value=draft_body, height=180)
+                        st.text_area("Copyable Reply Draft for Client:", value=draft_body, height=220)
+                    else:
+                        st.markdown("---")
+                        st.markdown(f"###### ⏱️ Engineering Manhour Allocation (`{mh_source}`):")
+                        mh_col1, mh_col2 = st.columns(2)
+                        with mh_col1:
+                            st.write(f"- **Cabin Design Engineer:** {(mh_used.get('cabin_design_engineer') or 0.0):.1f} hrs")
+                            st.write(f"- **Structural Engineer:** {(mh_used.get('structural_engineer') or 0.0):.1f} hrs")
+                            st.write(f"- **Avionics Design Engineer:** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
+                        with mh_col2:
+                            st.write(f"- **Certification Engineer:** {(mh_used.get('certification_engineer') or 0.0):.1f} hrs")
+                            st.write(f"- **Project Manager:** {(mh_used.get('project_manager') or 0.0):.1f} hrs")
+                            st.write(f"- **Independent CVE Verification (21.A.239):** `{part21_info['cve_hours']:.1f} hrs`")
+                            st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")
 
                 # TAB 2: Pricing & Interactive Margin Sandbox
                 with tab_pricing:
-                    st.markdown("###### 🎛️ Interactive Margin Sandbox")
-                    st.caption(f"Adjust margin live within customer class band (`{c_class}`: {class_band['min_margin']*100:.0f}% to {class_band['max_margin']*100:.0f}%):")
-                    
-                    custom_margin_pct = st.slider(
-                        "Live Margin Adjustment (%)",
-                        min_value=float(class_band["min_margin"] * 100),
-                        max_value=float(class_band["max_margin"] * 100),
-                        value=float(base_quote["margin_applied"] * 100),
-                        step=0.5
-                    )
-                    
-                    # Recalculate quote with sandbox margin
-                    sandbox_margin = round(custom_margin_pct / 100.0, 4)
-                    base_labor = base_quote["base_labor_cost"]
-                    margin_amt = round(base_labor * sandbox_margin, 2)
-                    contingency = base_quote["contingency"]
-                    testing = base_quote["testing_fee"]
-                    materials = base_quote["material_allowance"]
-                    final_total = round(base_labor + margin_amt + contingency + testing + materials, 2)
-                    
-                    st.markdown("###### Itemized Cost Breakdown:")
-                    breakdown_df = pd.DataFrame({
-                        "Line Item": [
-                            "Engineering Base Labor",
-                            f"Customer Margin ({custom_margin_pct:.1f}%)",
-                            "Contingency Allowance (5.0%)",
-                            "Testing & Certification Fee",
-                            "Material Allowance"
-                        ],
-                        "Description": [
-                            f"Total {total_hours:.0f} engineering hours",
-                            f"Target margin for {c_class}",
-                            "Unforeseen technical risks",
-                            "Fixed authority approval package",
-                            f"Allowance for {fleet_sz} aircraft"
-                        ],
-                        "Cost (USD)": [
-                            f"${base_labor:,.2f}",
-                            f"${margin_amt:,.2f}",
-                            f"${contingency:,.2f}",
-                            f"${testing:,.2f}",
-                            f"${materials:,.2f}"
-                        ]
-                    })
-                    st.table(breakdown_df)
-                    
-                    st.markdown(f"""
-                    <div style="background-color: #ffffff; border: 2px solid #c8102e; border-radius: 6px; padding: 0.85rem; text-align: center;">
-                        <span style="color: #64748b; font-size: 0.85rem; font-weight: 600;">FINAL NET QUOTE (SANDBOX ADJUSTED)</span>
-                        <h3 style="color: #c8102e; margin: 0; font-weight: 800;">${final_total:,.2f} USD</h3>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    if gaps:
+                        st.markdown(f"""
+                        <div class="banner-warning" style="padding: 1.5rem; text-align: center;">
+                            <h4 style="margin-top:0; color: #92400e;">🔒 PRICING LOCKED</h4>
+                            <p><b>{len(gaps)} missing field(s)</b> are required to calculate a valid DOA engineering quote.</p>
+                            <p style="font-size: 0.88rem; color: #78350f;">Please send the generated clarification email (see <i>Extracted Facts & Gaps</i> tab) to the customer to collect the required project scope and aircraft details.</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("###### 🎛️ Interactive Margin Sandbox")
+                        st.caption(f"Adjust margin live within customer class band (`{c_class}`: {class_band['min_margin']*100:.0f}% to {class_band['max_margin']*100:.0f}%):")
+                        
+                        custom_margin_pct = st.slider(
+                            "Live Margin Adjustment (%)",
+                            min_value=float(class_band["min_margin"] * 100),
+                            max_value=float(class_band["max_margin"] * 100),
+                            value=float(base_quote["margin_applied"] * 100),
+                            step=0.5
+                        )
+                        
+                        # Recalculate quote with sandbox margin
+                        sandbox_margin = round(custom_margin_pct / 100.0, 4)
+                        base_labor = base_quote["base_labor_cost"]
+                        margin_amt = round(base_labor * sandbox_margin, 2)
+                        contingency = base_quote["contingency"]
+                        testing = base_quote["testing_fee"]
+                        materials = base_quote["material_allowance"]
+                        final_total = round(base_labor + margin_amt + contingency + testing + materials, 2)
+                        
+                        st.markdown("###### Itemized Cost Breakdown:")
+                        breakdown_df = pd.DataFrame({
+                            "Line Item": [
+                                "Engineering Base Labor",
+                                f"Customer Margin ({custom_margin_pct:.1f}%)",
+                                "Contingency Allowance (5.0%)",
+                                "Testing & Certification Fee",
+                                "Material Allowance"
+                            ],
+                            "Description": [
+                                f"Total {total_hours:.0f} engineering hours",
+                                f"Target margin for {c_class}",
+                                "Unforeseen technical risks",
+                                "Fixed authority approval package",
+                                f"Allowance for {fleet_sz} aircraft"
+                            ],
+                            "Cost (USD)": [
+                                f"${base_labor:,.2f}",
+                                f"${margin_amt:,.2f}",
+                                f"${contingency:,.2f}",
+                                f"${testing:,.2f}",
+                                f"${materials:,.2f}"
+                            ]
+                        })
+                        st.table(breakdown_df)
+                        
+                        st.markdown(f"""
+                        <div style="background-color: #ffffff; border: 2px solid #c8102e; border-radius: 6px; padding: 0.85rem; text-align: center;">
+                            <span style="color: #64748b; font-size: 0.85rem; font-weight: 600;">FINAL NET QUOTE (SANDBOX ADJUSTED)</span>
+                            <h3 style="color: #c8102e; margin: 0; font-weight: 800;">${final_total:,.2f} USD</h3>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                 # TAB 3: Proposal Summary Document
                 with tab_summary:
-                    summary_text = generate_proposal_summary(
-                        facts=facts,
-                        gaps=gaps,
-                        quote={
-                            "base_labor_cost": base_labor,
-                            "margin_applied": sandbox_margin,
-                            "margin_amount": margin_amt,
-                            "contingency": contingency,
-                            "testing_fee": testing,
-                            "material_allowance": materials,
-                            "total_cost": final_total
-                        },
-                        email_draft="" if not gaps else draft_clarification_email(email_input, gaps, draft_lang)
-                    )
+                    if gaps:
+                        summary_text = generate_proposal_summary(
+                            facts=facts,
+                            gaps=gaps,
+                            quote=None,
+                            email_draft=draft_clarification_email(email_input, gaps, draft_lang)
+                        )
+                    else:
+                        summary_text = generate_proposal_summary(
+                            facts=facts,
+                            gaps=gaps,
+                            quote={
+                                "base_labor_cost": base_labor,
+                                "margin_applied": sandbox_margin,
+                                "margin_amount": margin_amt,
+                                "contingency": contingency,
+                                "testing_fee": testing,
+                                "material_allowance": materials,
+                                "total_cost": final_total
+                            },
+                            email_draft=""
+                        )
                     
                     st.markdown(summary_text)
                     st.download_button(
