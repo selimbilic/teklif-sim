@@ -397,7 +397,13 @@ with col_dashboard:
                         st.write(f"- **Structural Engineer:** {(mh_used.get('structural_engineer') or 0.0):.1f} hrs")
                         st.write(f"- **Avionics Design Engineer:** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
                     with mh_col2:
-                        st.write(f"- **Certification Engineer:** {(mh_used.get('certification_engineer') or 0.0):.1f} hrs")
+                        if mh_source == "Customer Provided" and facts.manhours and facts.manhours.certification_engineer is not None:
+                            cert_hrs = facts.manhours.certification_engineer
+                        else:
+                            cert_hrs = (mh_used.get('certification_engineer') or 0.0) - part21_info['cve_hours']
+                            if cert_hrs < 0:
+                                cert_hrs = (mh_used.get('certification_engineer') or 0.0)
+                        st.write(f"- **Certification Engineer:** {cert_hrs:.1f} hrs")
                         st.write(f"- **Project Manager:** {(mh_used.get('project_manager') or 0.0):.1f} hrs")
                         st.write(f"- **Independent CVE Verification (21.A.239):** `{part21_info['cve_hours']:.1f} hrs`")
                         st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")

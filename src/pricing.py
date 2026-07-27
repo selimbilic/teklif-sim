@@ -3,7 +3,7 @@ import csv
 import json
 from typing import Dict, Union, Any, Optional
 from pydantic import BaseModel
-from src.estimation import estimate_manhours, ManhourEstimate
+from src.estimation import estimate_manhours, ManhourEstimate, classify_part21_change
 
 def load_data_files():
     """
@@ -90,6 +90,11 @@ def calculate_quote(
             dal_level=dal_level
         )
         manhours_dict = est.model_dump()
+    elif scope_text:
+        # Add mandatory EASA Part 21.A.239 CVE verification hours to customer certification engineering hours
+        part21_info = classify_part21_change(scope_text, modification_type or "cabin", complexity or "standard")
+        cve_hours = part21_info["cve_hours"]
+        manhours_dict["certification_engineer"] = (manhours_dict.get("certification_engineer") or 0.0) + cve_hours
 
     # 2. Validate inputs
     for role, hours in manhours_dict.items():
