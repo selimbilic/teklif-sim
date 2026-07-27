@@ -47,3 +47,21 @@ def test_extract_facts_cached_lru():
         res2 = extract_facts_cached(sample_text)
         assert res2.aircraft_type == "A320"
         assert mock_raw.call_count == 1
+
+def test_missing_api_key_error_handling():
+    from src.extract import extract_facts
+    with patch.dict(os.environ, {}, clear=True):
+        facts = extract_facts("Some sample email text")
+        assert facts.is_valid is False
+        assert facts.error_type == "missing_api_key"
+        assert "GEMINI_API_KEY" in facts.error_message
+
+def test_quota_exceeded_error_handling():
+    from src.extract import extract_facts
+    with patch.dict(os.environ, {"GEMINI_API_KEY": "test_key"}):
+        with patch("google.genai.Client") as mock_client:
+            mock_client.return_value.models.generate_content.side_effect = Exception("429 RESOURCE_EXHAUSTED Quota exceeded")
+            facts = extract_facts("Some sample email text", max_retries=1)
+            assert facts.is_valid is False
+            assert facts.error_type == "quota_exceeded"
+            assert "quota" in facts.error_message.lower()

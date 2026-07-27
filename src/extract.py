@@ -35,7 +35,7 @@ class EmailExtraction(BaseModel):
     )
     modification_type: Optional[str] = Field(
         None, 
-        description="Must be exactly one of: 'cabin', 'structural', 'avionics', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', 'structural_repair'."
+        description="Must be exactly one of: 'cabin', 'structural', 'avionics', 'cargo', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', 'structural_repair'."
     )
     project_type: Optional[str] = Field(
         None,
@@ -69,15 +69,29 @@ class EmailExtraction(BaseModel):
         ..., 
         description="Set to False if the e-mail is completely unrelated to aircraft engineering design modifications (e.g. spam, catering, marketing, personal email). Otherwise, set to True."
     )
+    error_type: Optional[str] = Field(
+        None,
+        description="Type of system/API error if extraction failed: 'missing_api_key', 'quota_exceeded', 'api_error', or None."
+    )
+    error_message: Optional[str] = Field(
+        None,
+        description="User-friendly error message if API extraction or configuration failed."
+    )
 
 def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
     """
     Extracts structured facts from email text using the Gemini API and Pydantic validation.
+    Catches API, Auth, and Network exceptions gracefully and returns an EmailExtraction object
+    with structured error metadata to prevent raw tracebacks in UI.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        print("[!] Warning: GEMINI_API_KEY is not set in extract.py. Returning default model.")
-        return EmailExtraction(is_valid=False)
+        print("[!] Warning: GEMINI_API_KEY is not set in extract.py.")
+        return EmailExtraction(
+            is_valid=False,
+            error_type="missing_api_key",
+            error_message="GEMINI_API_KEY is not configured in environment variables or .env file."
+        )
 
     client = genai.Client()
     
@@ -91,7 +105,7 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
        - If the email indicates they are flagship, partner, etc., use that.
        - If not mentioned, try to infer it from the name (e.g. alliance/partner members -> partner, main carrier -> flagship, standard airlines -> third_party).
        - If unclear, default to 'third_party'.
-    4. Determine the modification type: 'cabin' (interiors, seats, galleys, carpets), 'structural' (repairs, mounts, fuselage penetrations), or 'avionics' (displays, Wi-Fi, wiring, ADS-B).
+    4. Determine the modification type: 'cabin', 'structural', 'avionics', 'cargo', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', or 'structural_repair'.
     5. Extract the fleet size (number of aircraft). If not mentioned, set to null.
     6. Extract the manhour breakdown if mentioned. Map roles to:
        - cabin_design_engineer
@@ -110,6 +124,7 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
         temperature=0.1
     )
 
+    last_exception = None
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
@@ -117,22 +132,40 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
                 contents=email_text,
                 config=config
             )
-            # Response is automatically parsed into the Pydantic schema because we specified response_schema
             if response.parsed:
                 return response.parsed
             else:
-                # Fallback parse in case response.parsed is None (rare in new SDK when response_schema is set)
                 data = json.loads(response.text)
                 return EmailExtraction(**data)
         except Exception as e:
+            last_exception = e
+            err_str = str(e)
             print(f"[!] Extraction attempt {attempt+1} failed: {e}")
             if attempt < max_retries - 1:
-                sleep_time = 20 if "429" in str(e) else (2 ** attempt)
-                print(f"[!] Sleeping for {sleep_time} seconds before retrying...")
+                sleep_time = 5 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) else (2 ** attempt)
+                print(f"[!] Waiting {sleep_time} seconds before retrying...")
                 time.sleep(sleep_time)
-            else:
-                print("[!] All extraction attempts failed.")
-                raise e
+
+    # All retries failed - return user-friendly structured error model instead of raising raw traceback
+    err_msg = str(last_exception) if last_exception else "Unknown error"
+    if any(k in err_msg for k in ["429", "RESOURCE_EXHAUSTED", "Quota", "quota"]):
+        return EmailExtraction(
+            is_valid=False,
+            error_type="quota_exceeded",
+            error_message="Gemini API rate limit or quota exceeded (429). Please wait a moment or verify your API plan limits."
+        )
+    elif any(k in err_msg for k in ["API_KEY", "401", "UNAUTHENTICATED", "invalid"]):
+        return EmailExtraction(
+            is_valid=False,
+            error_type="missing_api_key",
+            error_message="Gemini API Key is invalid or unauthenticated."
+        )
+    else:
+        return EmailExtraction(
+            is_valid=False,
+            error_type="api_error",
+            error_message=f"Gemini API request failed after {max_retries} attempts: {err_msg}"
+        )
 
     return EmailExtraction(is_valid=False)
 

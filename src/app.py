@@ -255,10 +255,38 @@ with col_dashboard:
         else:
             facts = st.session_state.get("analyzed_facts") or extract_facts_cached(clean_email)
             
-        if not facts.is_valid:
+        err_type = getattr(facts, "error_type", None)
+        err_msg = getattr(facts, "error_message", None)
+        
+        if err_type == "missing_api_key":
+            st.markdown(f"""
+            <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
+                🔑 <b>CONFIG WARNING: GEMINI_API_KEY NOT FOUND</b><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'GEMINI_API_KEY is not configured in your environment variables or .env file.'}</span><br>
+                <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">Please create a <code>.env</code> file in the project root with <code>GEMINI_API_KEY=your_key_here</code> to enable AI extraction.</span>
+            </div>
+            """, unsafe_allow_html=True)
+        elif err_type == "quota_exceeded":
+            st.markdown(f"""
+            <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
+                ⏳ <b>RATE LIMIT / QUOTA EXHAUSTED (429)</b><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'Gemini API rate limit or quota exceeded.'}</span><br>
+                <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">The free API rate limit or quota has been reached. Please wait a few moments before trying again or verify your Gemini API plan.</span>
+            </div>
+            """, unsafe_allow_html=True)
+        elif err_type == "api_error":
+            st.markdown(f"""
+            <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
+                🌐 <b>API COMMUNICATION ERROR</b><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'Failed to communicate with Gemini API service.'}</span><br>
+                <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">Please check your network connection or verify API service status.</span>
+            </div>
+            """, unsafe_allow_html=True)
+        elif not facts.is_valid:
             st.markdown("""
-            <div class="banner-danger">
-                ❌ INVALID REQUEST: Flagged as non-aviation / spam. Proposal generation halted.
+            <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
+                ❌ <b>INVALID REQUEST: NON-AVIATION / SPAM</b><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">The submitted e-mail inquiry does not appear to be an aircraft engineering modification request (e.g. spam, catering, marketing, personal). Proposal generation halted.</span>
             </div>
             """, unsafe_allow_html=True)
         else:
