@@ -135,13 +135,14 @@ def get_dal_multiplier(dal_level: Optional[str]) -> float:
     - DAL A / B (Catastrophic / Hazardous): 2.2x
     - DAL C / D (Major / Minor): 1.3x
     - DAL E (No Safety Effect): 1.0x
+    Flexible string matching for 'DAL A', 'Level A', 'A', 'DAL-A', 'B', 'C', 'D', 'E'.
     """
     if not dal_level:
         return 1.0
     dal = dal_level.upper().strip()
-    if "DAL A" in dal or "DAL B" in dal:
+    if any(k in dal for k in ["DAL A", "DAL B", "LEVEL A", "LEVEL B", "DAL-A", "DAL-B"]) or dal in ["A", "B"]:
         return 2.2
-    elif "DAL C" in dal or "DAL D" in dal:
+    elif any(k in dal for k in ["DAL C", "DAL D", "LEVEL C", "LEVEL D", "DAL-C", "DAL-D"]) or dal in ["C", "D"]:
         return 1.3
     return 1.0
 
@@ -195,6 +196,11 @@ def estimate_manhours(
             c_level = "minor"
 
     base_dict = BASELINE_HOURS[mod_type][c_level].copy()
+
+    # Apply CS-23 vs CS-25 certification adjustment factor
+    cert_basis = resolve_cert_basis(aircraft_type)
+    if cert_basis == "CS-23":
+        base_dict["certification_engineer"] = round(base_dict["certification_engineer"] * 0.85, 1)
 
     # Apply ARP4761 / DO-178C DAL Safety Multiplier to Certification & Avionics Hours
     dal_mult = get_dal_multiplier(dal_level)

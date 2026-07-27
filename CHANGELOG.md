@@ -5,6 +5,17 @@ All notable changes to the **TEKLİF-Sim** project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-07-27
+
+### Added & Fixed
+- **ARP4761 DAL Safety Multiplier Pipeline Wiring (`src/pricing.py` & `src/app.py`):** Forwarded `dal_level` and `aircraft_type` parameters into `calculate_quote` and `estimate_manhours`, ensuring ARP4761 safety multipliers (DAL A/B: 2.2x, DAL C/D: 1.3x) directly adjust avionics and certification hours in quotes.
+- **Flexible DAL Level String Parsing (`src/estimation.py`):** Enhanced `get_dal_multiplier` to support flexible string formats (`"C"`, `"Level B"`, `"DAL-A"`, `"A"`, `"D"`).
+- **CS-23 vs CS-25 Certification Manhour Adjustment (`src/estimation.py`):** Applied a 0.85x certification factor for `CS-23` general aviation aeroplanes to reflect streamlined compliance documentation.
+- **Data Integrity & Gap Rules (`src/gaps.py` & `src/draft_email.py`):** Flagged `fleet_size <= 0` as a missing information gap in `check_gaps`. Added Turkish translation for `"scope"` field in fallback clarification email template.
+- **Expanded Unit Test Suite (`tests/`):** Expanded test suite to 30/30 passing tests covering flexible DAL parsing, CS-23 certification factors, zero fleet gap checks, and DAL quote pricing inclusion.
+
+---
+
 ## [1.2.0] - 2026-07-27
 
 ### Added

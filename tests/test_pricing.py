@@ -199,3 +199,25 @@ def test_empty_manhours():
     assert quote["manhour_source"] == "DOA Estimation Engine"
     assert quote["base_labor_cost"] > 0.00
     assert quote["total_cost"] > 0.00
+
+def test_quote_passes_dal_and_aircraft_type():
+    quote_default = calculate_quote(
+        manhours={},
+        customer_class="third_party",
+        strategy_string="standard",
+        fleet_size=1,
+        modification_type="avionics",
+        complexity="standard"
+    )
+    quote_dal_a = calculate_quote(
+        manhours={},
+        customer_class="third_party",
+        strategy_string="standard",
+        fleet_size=1,
+        modification_type="avionics",
+        complexity="standard",
+        dal_level="DAL A"
+    )
+    # Quote with DAL A should have higher labor cost than default due to 2.2x safety multiplier
+    assert quote_dal_a["base_labor_cost"] > quote_default["base_labor_cost"]
+    assert quote_dal_a["total_cost"] > quote_default["total_cost"]

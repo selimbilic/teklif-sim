@@ -33,6 +33,8 @@ def check_gaps(facts: Union[EmailExtraction, dict]) -> List[str]:
             missing_fields.append(field)
         elif isinstance(val, str) and not val.strip():
             missing_fields.append(field)
+        elif field == "fleet_size" and isinstance(val, (int, float)) and val <= 0:
+            missing_fields.append(field)
         elif field == "scope" and isinstance(val, str):
             # Flag vague scope statements
             vague_keywords = ["vague", "some modification", "need price", "general check", "unspecified"]

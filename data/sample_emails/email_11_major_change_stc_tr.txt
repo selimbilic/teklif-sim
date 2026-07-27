@@ -1,0 +1,24 @@
+From: engineering@bosphorusjet.aero
+To: proposals@aerodesign.com
+Date: Mon, 27 Jul 2026 10:15:00 +0300
+Subject: Teklif Talebi: 3x Boeing 737-800 Ana Kargo Kapısı Modifikasyonu ve STC (Major Change)
+
+Sayın AeroDesign Mühendislik Grubu,
+
+Bosphorus Jet bünyesindeki 3 adet Boeing 737-800 yolcu uçağımızın kargo uçağına dönüştürülmesi (P2F Cargo Conversion) projesi kapsamında ana gövde kargo kapısı açılması (Main Deck Cargo Door STC) ve gövde yapısal takviyeleri için EASA Part 21 Major Change / STC mühendislik ve sertifikasyon teklifi talep etmekteyiz.
+
+Proje Kapsamı:
+- Fuselage Frame 540-580 arası ana gövde kargo kapısı kesiti (Cutout) ve ağır takviye doubler tasarımı.
+- Ana güverte kargo taban kirişleri (Floor Beams) ve bariyer ağı (Rigid Cargo Barrier Net) statik/yorulma (Fatigue) analizleri.
+- CS-25 sertifikasyon bazı uyarınca EASA Part 21.A.91 Major Change / STC onay paketinin hazırlanması.
+- ELA (Electrical Load Analysis), FHA/PSSA emniyet değerlendirmesi ve bağımsız CVE (Compliance Verification Engineer) doğrulama süreçleri.
+- Filo Büyüklüğü: 3 adet Boeing 737-800.
+
+Mühendislik adam/saat dağılımı, regülasyon uyum matrisi ve fiyat teklifinizi paylaşmanızı rica ederiz.
+
+Saygılarımızla,
+
+Kemal Soylu
+Teknik Mühendislik Müdürü
+Bosphorus Jet Cargo Operations
+engineering@bosphorusjet.aero

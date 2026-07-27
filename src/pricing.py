@@ -54,7 +54,9 @@ def calculate_quote(
     fleet_size: int = 1,
     modification_type: Optional[str] = "cabin",
     complexity: Optional[str] = "standard",
-    scope_text: Optional[str] = None
+    scope_text: Optional[str] = None,
+    aircraft_type: Optional[str] = None,
+    dal_level: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Calculates an itemized quote for an aircraft modification project.
@@ -83,7 +85,9 @@ def calculate_quote(
             modification_type=modification_type,
             complexity=complexity,
             fleet_size=fleet_size,
-            scope_text=scope_text
+            scope_text=scope_text,
+            aircraft_type=aircraft_type,
+            dal_level=dal_level
         )
         manhours_dict = est.model_dump()
 

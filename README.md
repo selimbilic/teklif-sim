@@ -1,6 +1,6 @@
 # TEKLİF-Sim (Aviation DOA Proposal Simulator)
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](file:///c:/Users/mseli/teklif-sim/CHANGELOG.md) [![Python](https://img.shields.io/badge/python-3.13-green.svg)](https://www.python.org/) [![EASA Part 21](https://img.shields.io/badge/EASA-Part%2021-red.svg)](https://www.easa.europa.eu/) [![Tests](https://img.shields.io/badge/tests-26%2F26%20passing-brightgreen.svg)](file:///c:/Users/mseli/teklif-sim/tests/)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](file:///c:/Users/mseli/teklif-sim/CHANGELOG.md) [![Python](https://img.shields.io/badge/python-3.13-green.svg)](https://www.python.org/) [![EASA Part 21](https://img.shields.io/badge/EASA-Part%2021-red.svg)](https://www.easa.europa.eu/) [![Tests](https://img.shields.io/badge/tests-30%2F30%20passing-brightgreen.svg)](file:///c:/Users/mseli/teklif-sim/tests/)
 
 **TEKLİF-Sim**, havayolu müşterilerinden gelen uçak modifikasyon taleplerini (kabini, yapısal, aviyonik) analiz eden, EASA Part 21 ve CS-25/CS-23 standartlarına göre regülasyon sınıflandırması yapan, eksik bilgileri belirleyen ve kurallara dayalı %100 deterministik fiyat teklifleri hazırlayan bağımsız bir yapay zeka ve mühendislik simülasyon uygulamasıdır.
 
@@ -14,7 +14,8 @@ Projede **Semantic Versioning (SemVer - MAJOR.MINOR.PATCH)** standartları uygul
 
 | Sürüm / Version | Yayın Tarihi | Açıklama / Highlights | Git Tag |
 | :--- | :--- | :--- | :--- |
-| **`v1.2.0`** (Mevcut) | 2026-07-27 | **Streamlit Action Button Execution Guard:** Buton tıklama bağımlılığı (`analyze_click`), LLM Extraction `@st.cache_data` önbellekleme, AST unused button compliance testi ve Headless Streamlit AppTest paket entegrasyonu. | [`v1.2.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.2.0) |
+| **`v1.3.0`** (Mevcut) | 2026-07-27 | **Aviation Precision & Safety DAL Wiring Release:** ARP4761 DAL emniyet çarpanının fiyatlandırmaya bağlanması, esnek DAL metin ayrıştırma, CS-23/CS-25 adam-saat katsayıları, fleet_size <= 0 veri doğrulaması ve 30/30 birim testleri. | [`v1.3.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.3.0) |
+| **`v1.2.0`** | 2026-07-27 | **Streamlit Action Button Execution Guard:** Buton tıklama bağımlılığı (`analyze_click`), LLM Extraction `@st.cache_data` önbellekleme, AST unused button compliance testi ve Headless Streamlit AppTest paket entegrasyonu. | [`v1.2.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.2.0) |
 | **`v1.1.0`** | 2026-07-24 | EASA Part 21.A.91 (Minor vs Major STC) sınıflandırması, **CS-25 & CS-23** sabit kanat sertifikasyon motoru, ARP4761 emniyet DAL seviyeleri (DAL A-E), 7 özel proje kategorisi, **Gaps-Locked Fiyat Koruması** ve 10 sentetik test senaryosu. | [`v1.1.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.1.0) |
 | **`v1.0.0`** | 2026-07-23 | İlk temel sürüm (Baseline Release). Deterministik fiyat motoru (`src/pricing.py`), Gemini 3.1 Flash Lite bilgi çıkarma (`src/extract.py`), DOA adam/saat kestirim motoru, 20/20 test ve Kurumsal Light Streamlit paneli. | [`v1.0.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.0.0) |
 
@@ -25,8 +26,11 @@ Projede **Semantic Versioning (SemVer - MAJOR.MINOR.PATCH)** standartları uygul
 Projeyi dilediğiniz sürüm durumunda çalıştırmak için aşağıdaki Git komutlarını kullanabilirsiniz:
 
 ```bash
-# Versiyon 1.2.0 (Güncel Sürüm) durumuna dönmek için:
+# Versiyon 1.3.0 (Güncel Sürüm) durumuna dönmek için:
 git checkout main
+
+# Versiyon 1.2.0 durumuna dönmek için:
+git checkout v1.2.0
 
 # Versiyon 1.1.0 durumuna dönmek için:
 git checkout v1.1.0

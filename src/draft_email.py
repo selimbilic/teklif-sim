@@ -53,6 +53,7 @@ def get_fallback_email(missing_fields: List[str], language: str) -> str:
                 "fleet_size": "Filo Büyüklüğü (uçak sayısı)",
                 "modification_type": "Modifikasyon Türü (kabin, yapısal, aviyonik)",
                 "customer_name": "Havayolu Müşteri Adı",
+                "scope": "Modifikasyon Kapsam Detayları",
                 "manhours": "Tahmini Mühendislik Adam-Saat Dağılımı"
             }.get(field, desc)
             bullet_points += f"  • {tr_desc}\n"

@@ -64,9 +64,24 @@ def test_new_project_types_estimation():
 
 def test_arp4761_dal_multipliers():
     assert get_dal_multiplier("DAL A") == 2.2
+    assert get_dal_multiplier("Level A") == 2.2
+    assert get_dal_multiplier("A") == 2.2
+    assert get_dal_multiplier("DAL-B") == 2.2
     assert get_dal_multiplier("DAL D") == 1.3
+    assert get_dal_multiplier("C") == 1.3
+    assert get_dal_multiplier("Level C") == 1.3
     assert get_dal_multiplier("DAL E") == 1.0
 
     dal_a_est = estimate_manhours(modification_type="avionics", complexity="standard", dal_level="DAL A")
     # Base cert engineer = 30.0 -> 30 * 2.2 = 66.0
     assert dal_a_est.certification_engineer == 66.0
+
+def test_cs23_manhour_factor():
+    cs25_est = estimate_manhours(modification_type="avionics", complexity="standard", aircraft_type="A320")
+    cs23_est = estimate_manhours(modification_type="avionics", complexity="standard", aircraft_type="King Air 350")
+    assert cs23_est.certification_engineer < cs25_est.certification_engineer
+
+def test_zero_fleet_size_gap():
+    from src.gaps import check_gaps
+    gaps = check_gaps({"aircraft_type": "A320", "fleet_size": 0, "modification_type": "cabin", "customer_name": "Test", "scope": "Valid scope"})
+    assert "fleet_size" in gaps

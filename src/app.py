@@ -266,7 +266,9 @@ with col_dashboard:
                     fleet_size=fleet_sz,
                     modification_type=facts.modification_type,
                     complexity=complexity_val,
-                    scope_text=facts.scope
+                    scope_text=facts.scope,
+                    aircraft_type=facts.aircraft_type,
+                    dal_level=getattr(facts, "dal_level", None)
                 )
                 mh_used = base_quote["manhours_used"]
                 mh_source = base_quote["manhour_source"]
