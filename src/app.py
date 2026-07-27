@@ -5,6 +5,23 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import pandas as pd
 import streamlit as st
+import importlib
+import src.pricing
+import src.estimation
+import src.extract
+import src.gaps
+import src.draft_email
+import src.summarize
+import src.__version__
+
+importlib.reload(src.pricing)
+importlib.reload(src.estimation)
+importlib.reload(src.extract)
+importlib.reload(src.gaps)
+importlib.reload(src.draft_email)
+importlib.reload(src.summarize)
+importlib.reload(src.__version__)
+
 from src.extract import extract_facts, extract_facts_cached
 from src.gaps import check_gaps, get_field_description
 from src.draft_email import draft_clarification_email
