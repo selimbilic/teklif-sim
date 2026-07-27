@@ -86,3 +86,53 @@ def test_clean_room_blacklist():
     )
     
     assert result.returncode == 0, f"Clean-room compliance scan failed:\n{result.stdout}\n{result.stderr}"
+
+
+def test_no_unused_streamlit_buttons():
+    """
+    AST Static Analysis Guard: Ensures that any variable assigned to an st.button(...) call
+    in src/app.py is explicitly evaluated inside a conditional statement or session state check,
+    preventing disconnected/unused action buttons.
+    """
+    app_path = os.path.join(PROJECT_ROOT, "src", "app.py")
+    assert os.path.exists(app_path), "src/app.py must exist"
+    
+    with open(app_path, "r", encoding="utf-8") as f:
+        content = f.read()
+        tree = ast.parse(content, filename=app_path)
+        
+    button_vars = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            call = node.value
+            if isinstance(call, ast.Call):
+                func = call.func
+                is_st_button = (isinstance(func, ast.Attribute) and func.attr == "button") or \
+                               (isinstance(func, ast.Name) and func.id == "button")
+                if is_st_button:
+                    for target in node.targets:
+                        if isinstance(target, ast.Name):
+                            button_vars.add(target.id)
+                            
+    assert len(button_vars) > 0, "Expected at least one st.button in src/app.py"
+    
+    used_in_conditions = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.If, ast.IfExp)):
+            for subnode in ast.walk(node.test):
+                if isinstance(subnode, ast.Name):
+                    used_in_conditions.add(subnode.id)
+        elif isinstance(node, ast.Assign):
+            rhs_names = {subnode.id for subnode in ast.walk(node.value) if isinstance(subnode, ast.Name)}
+            referenced_buttons = rhs_names & button_vars
+            if referenced_buttons:
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        for if_node in ast.walk(tree):
+                            if isinstance(if_node, (ast.If, ast.IfExp)):
+                                if_names = {sn.id for sn in ast.walk(if_node.test) if isinstance(sn, ast.Name)}
+                                if target.id in if_names:
+                                    used_in_conditions.update(referenced_buttons)
+                                    
+    unreferenced = button_vars - used_in_conditions
+    assert not unreferenced, f"Discovered unused/disconnected st.button variables in src/app.py: {unreferenced}"

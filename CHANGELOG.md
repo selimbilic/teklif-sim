@@ -5,6 +5,15 @@ All notable changes to the **TEKLİF-Sim** project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-27
+
+### Added
+- **Streamlit Action Button Execution Guard (`src/app.py`):** Explicitly wired `analyze_click` (`st.button`) to `st.session_state`. Gemini LLM fact extraction now triggers ONLY on explicit button action or sample email selection, preventing redundant LLM calls on widget interaction.
+- **LLM Extraction Caching (`src/extract.py`):** Added `@st.cache_data` caching to `extract_facts_cached` to avoid duplicate Gemini API calls for identical email texts (0 cost, 0ms latency).
+- **AST Unused Button Compliance Guard (`tests/test_compliance.py`):** Added `test_no_unused_streamlit_buttons()` AST test to ensure all `st.button` variables in `src/app.py` are properly checked in conditional statements.
+- **Streamlit Headless AppTest Suite (`tests/test_ui.py`):** Added Streamlit AppTest integration suite verifying UI rendering and button trigger flow without browser automation.
+- **Streamlit Skill Event Guarding Guidelines (`.agents/skills/developing-with-streamlit/SKILL.md`):** Documented explicit action button event guarding and LLM cost protection patterns.
+
 ---
 
 ## [1.1.0] - 2026-07-24

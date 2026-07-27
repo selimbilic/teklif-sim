@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+import functools
 from typing import Dict, Optional
 from pydantic import BaseModel, Field
 from google import genai
@@ -134,6 +135,20 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
                 raise e
 
     return EmailExtraction(is_valid=False)
+
+
+@functools.lru_cache(maxsize=64)
+def _extract_facts_cached_raw(email_text: str) -> str:
+    """Internal helper to cache JSON string output of Gemini API calls."""
+    facts = extract_facts(email_text)
+    return facts.model_dump_json()
+
+
+def extract_facts_cached(email_text: str) -> EmailExtraction:
+    """Cached wrapper around extract_facts using lru_cache for zero-cost repeated queries."""
+    json_str = _extract_facts_cached_raw(email_text)
+    return EmailExtraction.model_validate_json(json_str)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
