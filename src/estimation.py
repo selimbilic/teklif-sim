@@ -197,6 +197,10 @@ def estimate_manhours(
 
     base_dict = BASELINE_HOURS[mod_type][c_level].copy()
 
+    # Include EASA Part 21.A.239(d)(2) Independent CVE Verification hours
+    part21_info = classify_part21_change(scope_text, mod_type, c_level)
+    base_dict["certification_engineer"] += part21_info["cve_hours"]
+
     # Apply CS-23 vs CS-25 certification adjustment factor
     cert_basis = resolve_cert_basis(aircraft_type)
     if cert_basis == "CS-23":

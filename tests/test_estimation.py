@@ -14,22 +14,22 @@ def test_cabin_standard_fleet_1():
     assert est.cabin_design_engineer == 80.0
     assert est.structural_engineer == 40.0
     assert est.avionics_design_engineer == 10.0
-    assert est.certification_engineer == 25.0
+    assert est.certification_engineer == 31.0  # 25.0 base + 6.0 CVE minor verification
     assert est.project_manager == 15.0
-    assert est.total_hours() == 170.0
+    assert est.total_hours() == 176.0
 
 def test_fleet_scaling():
     # 5 aircraft fleet size: scaling factor = 1.0 + (5-1)*0.10 = 1.4x
     est = estimate_manhours(modification_type="cabin", complexity="standard", fleet_size=5)
     assert est.cabin_design_engineer == 112.0 # 80 * 1.4
     assert est.structural_engineer == 56.0    # 40 * 1.4
-    assert est.certification_engineer == 35.0 # 25 * 1.4
+    assert est.certification_engineer == 43.4 # (25 + 6 CVE) * 1.4
 
 def test_scope_keyword_inference():
     # Test major complexity inferred from STC keyword
     est = estimate_manhours(modification_type="structural", scope_text="Major fuselage STC modification for cargo door")
     assert est.structural_engineer == 300.0 # major baseline
-    assert est.certification_engineer == 100.0
+    assert est.certification_engineer == 125.0 # 100.0 base + 25.0 STC CVE verification
 
 def test_fallback_defaults():
     est = estimate_manhours(modification_type=None, complexity=None, fleet_size=None)
@@ -73,8 +73,8 @@ def test_arp4761_dal_multipliers():
     assert get_dal_multiplier("DAL E") == 1.0
 
     dal_a_est = estimate_manhours(modification_type="avionics", complexity="standard", dal_level="DAL A")
-    # Base cert engineer = 30.0 -> 30 * 2.2 = 66.0
-    assert dal_a_est.certification_engineer == 66.0
+    # Base cert engineer = (30.0 base + 6.0 CVE) * 2.2 = 79.2
+    assert dal_a_est.certification_engineer == 79.2
 
 def test_cs23_manhour_factor():
     cs25_est = estimate_manhours(modification_type="avionics", complexity="standard", aircraft_type="A320")
