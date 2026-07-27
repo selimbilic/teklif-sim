@@ -18,11 +18,13 @@ def check_gaps(facts: Union[EmailExtraction, dict]) -> List[str]:
     """
     missing_fields = []
     
-    # Standardize facts to dictionary if it is a Pydantic model
-    if isinstance(facts, EmailExtraction):
+    # Standardize facts to dictionary (handles hot-reloaded Pydantic models cleanly)
+    if hasattr(facts, "model_dump"):
         facts_dict = facts.model_dump()
-    else:
+    elif isinstance(facts, dict):
         facts_dict = facts
+    else:
+        facts_dict = getattr(facts, "__dict__", {})
 
     # Check each required field
     for field in REQUIRED_FIELDS:

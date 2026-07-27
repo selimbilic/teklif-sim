@@ -66,7 +66,7 @@ def calculate_quote(
     manhour_source = "Customer Provided"
     manhours_dict = {}
 
-    if isinstance(manhours, BaseModel):
+    if hasattr(manhours, "model_dump"):
         manhours_dict = manhours.model_dump()
     elif isinstance(manhours, dict):
         manhours_dict = dict(manhours)
