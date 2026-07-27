@@ -1,0 +1,23 @@
+From: ops@bosphorusjet.com
+To: proposals@aerodesign.com
+Date: Mon, 27 Jul 2026 11:30:00 +0300
+Subject: Critical Primary Avionics & Flight Guidance Upgrade - 2x Beechcraft King Air 350
+
+Hello AeroDesign Team,
+
+Bosphorus Jet requires a turnkey DOA engineering proposal for a critical primary flight control and avionics modernization project across 2 Beechcraft King Air 350 aircraft (CS-23 certification basis).
+
+Scope of Work:
+- Full glass cockpit retrofit with primary flight guidance computer and automatic flight control system (AFCS).
+- Integration of primary fly-by-wire autopilot interface, flight envelope protection, and dual WAAS/LPV GPS precision approach guidance.
+- Safety and Hazard Assessment per ARP4761 / DO-178C / DO-254 where system malfunction or loss of guidance is classified with Catastrophic failure condition severity.
+- EASA Part 21 Major Modification approval package and Compliance Verification Engineer (CVE) sign-off.
+
+We look forward to receiving your itemized proposal and engineering timeline.
+
+Best regards,
+
+Captain Selim Kaya
+Head of Operations
+Bosphorus Jet
+ops@bosphorusjet.com
