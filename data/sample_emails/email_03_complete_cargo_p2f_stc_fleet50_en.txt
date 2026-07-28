@@ -1,0 +1,24 @@
+From: fleet@globalcargo.com
+To: proposals@aerodesign.com
+Date: Tue, 28 Jul 2026 11:00:00 +0300
+Subject: RFP: P2F Cargo Conversion Main Deck Door STC for Fleet of 50x A330-200
+
+Dear AeroDesign Engineering Team,
+
+Global Cargo Systems is requesting a comprehensive engineering quote for a full Passenger-to-Freighter (P2F) conversion STC program across our fleet of 50 Airbus A330-200 aircraft.
+
+Project Overview:
+- Aircraft Type: Airbus A330-200 (CS-25 Large Transport)
+- Fleet Quantity: 50 aircraft
+- Account Class: Global Cargo (Partner Account)
+- Scope: Main deck cargo door cutout, door frame surround structure reinforcement, floor beam replacement, cargo loading system (CLS) electrical integration, and 9G rigid cargo barrier net installation.
+- Certification Basis: EASA Part 21 Major Change / STC approval under CS-25.571 Damage Tolerance & Fatigue requirements.
+
+We request your DOA Engineering Engine to compute baseline hours and apply standard fleet learning curve amortization for a 50-aircraft commitment.
+
+Sincerely,
+
+Marcus Vance
+VP of Engineering & Fleet Operations
+Global Cargo Systems
+marcus.vance@globalcargo.com

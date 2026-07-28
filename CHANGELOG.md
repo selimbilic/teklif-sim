@@ -5,6 +5,29 @@ All notable changes to the **TEKLİF-Sim** project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-07-28
+
+### Breaking Changes
+- **5-Tier DAL Multiplier System (`src/estimation.py`):** Replaced 2-tier DAL mapping (A/B=2.2, C/D=1.3) with DO-178C Annex A objective-proportional 5-tier system: DAL A=2.4x (71 obj, MC/DC+OCV), B=2.0x (69 obj), C=1.5x (62 obj), D=1.15x (26 obj), E=1.0x (0 obj). This changes all quote calculations involving DAL levels.
+- **NRE/Recurring Fleet Scaling with Wright 80% Learning Curve (`src/estimation.py`):** Replaced linear fleet scaling (`1 + (n-1)*0.10`) with NRE/Recurring split model using Wright learning curve. NRE ratio varies by mod type (cabin=70%, cargo=55%). Large fleets now correctly reflect economies of scale.
+- **CS-23 All-Role Reduction (`src/estimation.py`):** Expanded CS-23 discount from certification-only (0.85x) to all engineering roles with discipline-specific factors (cabin=0.55x, structural=0.60x, avionics=0.65x, certification=0.50x, PM=0.70x).
+- **Mod-Type-Aware Testing Fees (`src/pricing.py`):** Replaced flat $1,500 testing fee with mod-type × complexity lookup table ranging from $800 (cabin minor) to $40,000 (cargo major).
+- **Mod-Type-Aware Material Allowance (`src/pricing.py`):** Replaced flat $500/aircraft with mod-type × complexity per-aircraft table ranging from $200 (ELAMS minor) to $80,000 (cargo major).
+- **Risk-Based Contingency (`src/pricing.py`):** Replaced fixed 5% contingency with risk-based rates: 4% (minor, no STC) to 15% (major STC), derived from AACE cost estimation standards.
+
+### Added
+- **Structural Engineer DAL Impact (`src/estimation.py`):** Structural engineering hours now receive 50% of the DAL multiplier effect, reflecting ARP4761 SSA impact on CS-25.571 damage tolerance analysis.
+- **Mod-Type-Sensitive CVE Hours (`src/estimation.py`):** Part 21.A.239(d) CVE hours now scale by modification type (e.g., minor cabin=4h vs STC cargo=65h) instead of flat 6/15/25h.
+- **ICA Preparation Hours (`src/estimation.py`):** Added CS-25.1529 / Appendix H ICA (Instructions for Continued Airworthiness) hours as separate certification line item, scaled by mod type and Part 21 classification.
+- **EWIS Compliance Hours (`src/estimation.py`):** Added CS 25.1707-1733 / AMC 20-21 EWIS hours for avionics-intensive modifications (IFC, IFE, ISPS, ELAMS, cargo).
+- **Expanded Scope Keywords (`src/estimation.py`):** Major scope keywords expanded from 11 to 28 entries; Minor keywords expanded from 6 to 17 entries (per EASA FAQ table of design change classification).
+- **AOG/Rush Urgency Surcharge (`src/pricing.py`):** Added urgency multiplier on base labor: rush=1.25x, AOG=1.50x, independent of margin band.
+- **Volume Discount (`src/pricing.py`):** Fleet 20+ gets 5% discount, Fleet 50+ gets 10% discount on subtotal.
+- **Enhanced Dashboard (`src/app.py`):** Pricing tab now shows urgency surcharge, risk-based contingency with STC indicator, mod-type-specific fees, volume discount, and EWIS/ICA line items.
+- **Enhanced Proposal Summary (`src/summarize.py`):** Proposal document reflects all new cost line items including urgency, volume discount, EWIS reference, and ICA hours.
+
+---
+
 ## [1.3.0] - 2026-07-27
 
 ### Added & Fixed

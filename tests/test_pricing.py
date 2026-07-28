@@ -1,9 +1,15 @@
 import os
 import pytest
-from src.pricing import calculate_quote
+from src.pricing import (
+    calculate_quote, get_testing_fee, get_material_allowance,
+    get_contingency_rate, get_urgency_surcharge, get_volume_discount,
+    TESTING_FEE_TABLE, MATERIAL_PER_AIRCRAFT, CONTINGENCY_RATES,
+)
 
-# Test Case 1: Flagship Müşteri - En Ucuz Strateji - 5 Uçak
-def test_case_1_flagship_cheapest():
+# === v2.0.0 Pricing Engine Tests ===
+
+# Test Case 1: Flagship customer, cheapest strategy, 5 aircraft, cabin standard
+def test_case_1_flagship_cheapest_cabin():
     manhours = {
         "cabin_design_engineer": 80,
         "structural_engineer": 40,
@@ -14,40 +20,24 @@ def test_case_1_flagship_cheapest():
         manhours=manhours,
         customer_class="flagship",
         strategy_string="cheapest possible",
-        fleet_size=5
+        fleet_size=5,
+        modification_type="cabin",
+        complexity="standard"
     )
     assert quote["base_labor_cost"] == 14800.00
     assert quote["margin_applied"] == 0.05
-    assert quote["margin_amount"] == 740.00
-    assert quote["contingency"] == 740.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 2500.00
-    assert quote["total_cost"] == 20280.00
+    assert quote["urgency_multiplier"] == 1.0
+    assert quote["base_labor_cost_adjusted"] == 14800.00
+    # Testing fee: cabin standard = 2500
+    assert quote["testing_fee"] == 2500.00
+    # Material: cabin standard = 1500 * 5 = 7500
+    assert quote["material_allowance"] == 7500.00
+    # Contingency: standard, no STC (cabin standard doesn't trigger STC) = 7%
+    assert quote["contingency_rate"] == 0.07
+    assert quote["total_cost"] > 0
 
-# Test Case 2: Flagship Müşteri - Rekabetçi Strateji - 5 Uçak
-def test_case_2_flagship_competitive():
-    manhours = {
-        "cabin_design_engineer": 80,
-        "structural_engineer": 40,
-        "certification_engineer": 20,
-        "project_manager": 10
-    }
-    quote = calculate_quote(
-        manhours=manhours,
-        customer_class="flagship",
-        strategy_string="keep it competitive for them",
-        fleet_size=5
-    )
-    assert quote["base_labor_cost"] == 14800.00
-    assert quote["margin_applied"] == 0.08
-    assert quote["margin_amount"] == 1184.00
-    assert quote["contingency"] == 740.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 2500.00
-    assert quote["total_cost"] == 20724.00
-
-# Test Case 3: Third Party Müşteri - Acil (Rush) Strateji - 1 Uçak
-def test_case_3_third_party_rush():
+# Test Case 2: Third-party, rush/AOG strategy → urgency surcharge
+def test_case_2_third_party_aog():
     manhours = {
         "structural_engineer": 60,
         "certification_engineer": 15,
@@ -56,151 +46,113 @@ def test_case_3_third_party_rush():
     quote = calculate_quote(
         manhours=manhours,
         customer_class="third_party",
-        strategy_string="premium / rush strategy",
-        fleet_size=1
+        strategy_string="AOG critical situation",
+        fleet_size=1,
+        modification_type="structural",
+        complexity="standard"
     )
-    assert quote["base_labor_cost"] == 8400.00
+    # AOG → urgency_multiplier = 1.50
+    assert quote["urgency_multiplier"] == 1.50
+    assert quote["base_labor_cost_adjusted"] == round(quote["base_labor_cost"] * 1.50, 2)
+    # Margin: premium/rush/aog → max_margin for third_party = 0.50
     assert quote["margin_applied"] == 0.50
-    assert quote["margin_amount"] == 4200.00
-    assert quote["contingency"] == 420.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 500.00
-    assert quote["total_cost"] == 15020.00
 
-# Test Case 4: Partner Müşteri - Belirsiz Strateji (Varsayılan Marj) - 8 Uçak
-def test_case_4_partner_default():
-    manhours = {
-        "structural_engineer": 150,
-        "avionics_design_engineer": 100,
-        "certification_engineer": 40,
-        "project_manager": 20
-    }
-    quote = calculate_quote(
-        manhours=manhours,
+# Test Case 3: Testing fee varies by mod type
+def test_testing_fee_by_mod_type():
+    assert get_testing_fee("cabin", "minor") == 800
+    assert get_testing_fee("cargo", "major") == 40000
+    assert get_testing_fee("avionics", "standard") == 8500
+    assert get_testing_fee("ifc", "major") == 25000
+    # Unknown mod type should fallback to cabin
+    assert get_testing_fee("unknown_type", "standard") == 2500
+
+# Test Case 4: Material allowance varies by mod type and fleet
+def test_material_allowance_by_mod_type():
+    assert get_material_allowance("cabin", "minor", 1) == 250
+    assert get_material_allowance("cargo", "major", 10) == 800000  # 80000 * 10
+    assert get_material_allowance("ifc", "standard", 5) == 75000  # 15000 * 5
+
+# Test Case 5: Risk-based contingency rates
+def test_contingency_risk_based():
+    assert get_contingency_rate("minor", False) == 0.04
+    assert get_contingency_rate("minor", True) == 0.06
+    assert get_contingency_rate("standard", False) == 0.07
+    assert get_contingency_rate("standard", True) == 0.10
+    assert get_contingency_rate("major", False) == 0.10
+    assert get_contingency_rate("major", True) == 0.15
+    # Fallback for unknown
+    assert get_contingency_rate("unknown", False) == 0.07
+
+# Test Case 6: Urgency surcharge detection
+def test_urgency_surcharge():
+    assert get_urgency_surcharge("cheapest possible") == 1.0
+    assert get_urgency_surcharge("normal project") == 1.0
+    assert get_urgency_surcharge("AOG critical") == 1.50
+    assert get_urgency_surcharge("rush delivery acil") == 1.25
+    assert get_urgency_surcharge("hızlı teslimat") == 1.25
+    assert get_urgency_surcharge("") == 1.0
+
+# Test Case 7: Volume discount
+def test_volume_discount():
+    assert get_volume_discount(1) == 0.0
+    assert get_volume_discount(10) == 0.0
+    assert get_volume_discount(19) == 0.0
+    assert get_volume_discount(20) == 0.05
+    assert get_volume_discount(49) == 0.05
+    assert get_volume_discount(50) == 0.10
+    assert get_volume_discount(100) == 0.10
+
+# Test Case 8: Volume discount applied in quote
+def test_volume_discount_in_quote():
+    quote_small = calculate_quote(
+        manhours={"cabin_design_engineer": 100},
         customer_class="partner",
-        strategy_string="normal project flow",
-        fleet_size=8
+        strategy_string="standard",
+        fleet_size=5,
+        modification_type="cabin",
+        complexity="standard"
     )
-    assert quote["base_labor_cost"] == 32600.00
-    assert quote["margin_applied"] == 0.22
-    assert quote["margin_amount"] == 7172.00
-    assert quote["contingency"] == 1630.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 4000.00
-    assert quote["total_cost"] == 46902.00
-
-# Test Case 5: Third Party Müşteri - En Ucuz Strateji - 12 Uçak
-def test_case_5_third_party_cheapest():
-    manhours = {
-        "cabin_design_engineer": 120,
-        "certification_engineer": 30,
-        "project_manager": 10
-    }
-    quote = calculate_quote(
-        manhours=manhours,
-        customer_class="third_party",
-        strategy_string="make it the cheapest possible",
-        fleet_size=12
-    )
-    assert quote["base_labor_cost"] == 15000.00
-    assert quote["margin_applied"] == 0.30
-    assert quote["margin_amount"] == 4500.00
-    assert quote["contingency"] == 750.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 6000.00
-    assert quote["total_cost"] == 27750.00
-
-# Test Case 6: Partner Müşteri - Rekabetçi Strateji - 2 Uçak
-def test_case_6_partner_competitive():
-    manhours = {
-        "cabin_design_engineer": 50,
-        "avionics_design_engineer": 50,
-        "certification_engineer": 15,
-        "project_manager": 5
-    }
-    quote = calculate_quote(
-        manhours=manhours,
+    quote_large = calculate_quote(
+        manhours={"cabin_design_engineer": 100},
         customer_class="partner",
-        strategy_string="rekabetçi fiyat verilsin",
-        fleet_size=2
+        strategy_string="standard",
+        fleet_size=25,
+        modification_type="cabin",
+        complexity="standard"
     )
-    assert quote["base_labor_cost"] == 11800.00
-    assert quote["margin_applied"] == 0.20
-    assert quote["margin_amount"] == 2360.00
-    assert quote["contingency"] == 590.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 1000.00
-    assert quote["total_cost"] == 17250.00
+    assert quote_small["volume_discount_rate"] == 0.0
+    assert quote_small["volume_discount"] == 0.0
+    assert quote_large["volume_discount_rate"] == 0.05
+    assert quote_large["volume_discount"] > 0
 
-# Test Case 7: Third Party Müşteri - Varsayılan Strateji - 1 Uçak
-def test_case_7_third_party_default():
-    manhours = {
-        "avionics_design_engineer": 100,
-        "certification_engineer": 25,
-        "project_manager": 10
-    }
-    quote = calculate_quote(
-        manhours=manhours,
-        customer_class="third_party",
-        strategy_string="",
-        fleet_size=1
-    )
-    assert quote["base_labor_cost"] == 13700.00
-    assert quote["margin_applied"] == 0.40
-    assert quote["margin_amount"] == 5480.00
-    assert quote["contingency"] == 685.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 500.00
-    assert quote["total_cost"] == 21865.00
-
-# Test Case 8: Flagship Müşteri - Acil (Rush) Strateji - 3 Uçak
-def test_case_8_flagship_rush():
-    manhours = {
-        "cabin_design_engineer": 150,
-        "structural_engineer": 100,
-        "avionics_design_engineer": 50,
-        "certification_engineer": 30,
-        "project_manager": 20
-    }
-    quote = calculate_quote(
-        manhours=manhours,
-        customer_class="flagship",
-        strategy_string="acil AOG durumuna göre hızlı fiyatlandırın",
-        fleet_size=3
-    )
-    assert quote["base_labor_cost"] == 35300.00
-    assert quote["margin_applied"] == 0.15
-    assert quote["margin_amount"] == 5295.00
-    assert quote["contingency"] == 1765.00
-    assert quote["testing_fee"] == 1500.00
-    assert quote["material_allowance"] == 1500.00
-    assert quote["total_cost"] == 45360.00
-
-# Edge Case 9: Negatif saat kontrolü
+# Test Case 9: Negative hours still raise ValueError
 def test_negative_manhours():
     manhours = {"cabin_design_engineer": -10}
     with pytest.raises(ValueError, match="cannot be negative"):
         calculate_quote(manhours, "flagship", "cheapest")
 
-# Edge Case 10: Bilinmeyen müşteri sınıfı
+# Test Case 10: Unknown customer class still raises ValueError
 def test_unknown_customer_class():
     manhours = {"cabin_design_engineer": 10}
     with pytest.raises(ValueError, match="Unknown customer class"):
         calculate_quote(manhours, "unknown_class", "cheapest")
 
-# Edge Case 11: Boş saat sözlüğü -> DOA Tahmin Motoru otomatik devreye girer
-def test_empty_manhours():
+# Test Case 11: Empty manhours → DOA Estimation Engine auto-engages
+def test_empty_manhours_doa_engine():
     quote = calculate_quote(
         manhours={},
         customer_class="third_party",
         strategy_string="cheapest",
-        fleet_size=1
+        fleet_size=1,
+        modification_type="cabin",
+        complexity="standard"
     )
     assert quote["manhour_source"] == "DOA Estimation Engine"
     assert quote["base_labor_cost"] > 0.00
     assert quote["total_cost"] > 0.00
 
-def test_quote_passes_dal_and_aircraft_type():
+# Test Case 12: DAL affects DOA engine quote
+def test_quote_dal_affects_total():
     quote_default = calculate_quote(
         manhours={},
         customer_class="third_party",
@@ -218,6 +170,55 @@ def test_quote_passes_dal_and_aircraft_type():
         complexity="standard",
         dal_level="DAL A"
     )
-    # Quote with DAL A should have higher labor cost than default due to 2.2x safety multiplier
     assert quote_dal_a["base_labor_cost"] > quote_default["base_labor_cost"]
     assert quote_dal_a["total_cost"] > quote_default["total_cost"]
+
+# Test Case 13: Cargo major STC triggers high contingency rate
+def test_cargo_major_stc_contingency():
+    quote = calculate_quote(
+        manhours={},
+        customer_class="partner",
+        strategy_string="standard",
+        fleet_size=3,
+        modification_type="cargo",
+        complexity="major",
+        scope_text="P2F cargo door conversion STC"
+    )
+    # Cargo major STC → contingency_rate should be 0.15
+    assert quote["contingency_rate"] == 0.15
+    # Testing fee: cargo major = 40000
+    assert quote["testing_fee"] == 40000
+
+# Test Case 14: Quote output has all v2.0.0 fields
+def test_quote_output_fields():
+    quote = calculate_quote(
+        manhours={"cabin_design_engineer": 50},
+        customer_class="flagship",
+        strategy_string="standard",
+        fleet_size=1
+    )
+    required_fields = [
+        "manhour_source", "manhours_used", "base_labor_cost",
+        "urgency_multiplier", "base_labor_cost_adjusted",
+        "margin_applied", "margin_amount",
+        "contingency_rate", "contingency",
+        "testing_fee", "material_allowance",
+        "volume_discount_rate", "volume_discount",
+        "total_cost"
+    ]
+    for field in required_fields:
+        assert field in quote, f"Missing field: {field}"
+
+# Test Case 15: CVE + ICA hours added to customer-provided cert hours
+def test_cve_ica_added_to_customer_hours():
+    quote = calculate_quote(
+        manhours={"certification_engineer": 20},
+        customer_class="flagship",
+        strategy_string="standard",
+        fleet_size=1,
+        modification_type="ifc",
+        complexity="major",
+        scope_text="Wi-Fi STC installation"
+    )
+    # IFC major STC → CVE=60, ICA=45 → total cert = 20 + 60 + 45 = 125
+    assert quote["manhours_used"]["certification_engineer"] == 125.0

@@ -1,0 +1,36 @@
+From: engineering@flagshipair.com
+To: proposals@aerodesign.com
+Date: Tue, 28 Jul 2026 09:30:00 +0300
+Subject: RFP: Turnkey IFC Satellite Wi-Fi Radome STC Modification for 6x B737-800
+
+Dear AeroDesign Engineering Team,
+
+Flagship Air is issuing this Request for Proposal (RFP) for a complete Design Organisation Approval (DOA) engineering package to install a Satellite In-Flight Connectivity (IFC) Ku-Band antenna radome across our fleet of 6 Boeing 737-800 aircraft.
+
+Project Specifications:
+- Aircraft Model: Boeing 737-800 (CS-25 Commercial Transport Aeroplane)
+- Fleet Size: 6 aircraft
+- Customer Account: Flagship Air (Flagship Account)
+- Safety Assessment: ARP4761 FHA/SSA assigning DAL B (Hazardous) to flight deck power isolation & RF interference mitigation
+- Wiring Integration: CS 25.1707 (Subpart H) EWIS compliance analysis required for main power feed and ARINC 429 bus routing
+
+Scope of Work:
+1. Fuselage crown structural cutout and external doubler plate stress analysis.
+2. Installation of tri-axial satellite antenna, Wireless Access Points (WAPs), and server rack in E&E bay.
+3. Full EASA Part 21 Major Change (STC) compliance package (Certification Programme, SB, Structural/EWIS Reports, FHA/SSA, ICA).
+
+Requested Manhour Allocation:
+- Cabin Design Engineer: 30 hours
+- Structural Engineer: 90 hours
+- Avionics Design Engineer: 140 hours
+- Certification Engineer: 45 hours
+- Project Manager: 30 hours
+
+Please provide an itemized quote and deliverable schedule under standard commercial terms.
+
+Best regards,
+
+David Miller
+Director of Fleet Engineering
+Flagship Air
+david.miller@flagshipair.com

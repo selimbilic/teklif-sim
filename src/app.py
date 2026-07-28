@@ -6,16 +6,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import pandas as pd
 import streamlit as st
 import importlib
-import src.pricing
 import src.estimation
+import src.pricing
 import src.extract
 import src.gaps
 import src.draft_email
 import src.summarize
 import src.__version__
 
-importlib.reload(src.pricing)
 importlib.reload(src.estimation)
+importlib.reload(src.pricing)
 importlib.reload(src.extract)
 importlib.reload(src.gaps)
 importlib.reload(src.draft_email)
@@ -25,7 +25,7 @@ importlib.reload(src.__version__)
 from src.extract import extract_facts, extract_facts_cached
 from src.gaps import check_gaps, get_field_description
 from src.draft_email import draft_clarification_email
-from src.pricing import calculate_quote, load_data_files
+from src.pricing import calculate_quote, load_data_files, get_urgency_surcharge
 from src.summarize import generate_proposal_summary
 from src.__version__ import __version__
 from src.estimation import resolve_cert_basis, classify_part21_change
@@ -321,6 +321,7 @@ with col_dashboard:
                 margin_pct_str = f"{base_quote['margin_applied']*100:.1f}%"
                 total_quote_str = f"${base_quote['total_cost']:,.2f}"
                 quote_color = "#c8102e"
+                urgency_mult = base_quote.get("urgency_multiplier", 1.0)
             else:
                 base_quote = None
                 mh_used = {}
@@ -423,17 +424,17 @@ with col_dashboard:
                     with mh_col1:
                         st.write(f"- **Cabin Design Engineer:** {(mh_used.get('cabin_design_engineer') or 0.0):.1f} hrs")
                         st.write(f"- **Structural Engineer:** {(mh_used.get('structural_engineer') or 0.0):.1f} hrs")
-                        st.write(f"- **Avionics Design Engineer:** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
+                        st.write(f"- **Avionics Design Engineer (incl. EWIS):** {(mh_used.get('avionics_design_engineer') or 0.0):.1f} hrs")
                     with mh_col2:
                         if mh_source == "Customer Provided" and facts.manhours and facts.manhours.certification_engineer is not None:
                             cert_hrs = facts.manhours.certification_engineer
                         else:
-                            cert_hrs = (mh_used.get('certification_engineer') or 0.0) - part21_info['cve_hours']
-                            if cert_hrs < 0:
-                                cert_hrs = (mh_used.get('certification_engineer') or 0.0)
+                            cert_base = (mh_used.get('certification_engineer') or 0.0) - part21_info['cve_hours'] - part21_info.get('ica_hours', 0.0)
+                            cert_hrs = max(0.0, cert_base)
                         st.write(f"- **Certification Engineer:** {cert_hrs:.1f} hrs")
                         st.write(f"- **Project Manager:** {(mh_used.get('project_manager') or 0.0):.1f} hrs")
-                        st.write(f"- **Independent CVE Verification (21.A.239):** `{part21_info['cve_hours']:.1f} hrs`")
+                        st.write(f"- **Independent CVE (21.A.239):** `{part21_info['cve_hours']:.1f} hrs`")
+                        st.write(f"- **ICA Preparation (CS-25.1529):** `{part21_info.get('ica_hours', 0.0):.1f} hrs`")
                         st.write(f"- **Total Estimated Hours:** `{total_hours:.1f} hrs`")
 
             # TAB 2: Pricing & Interactive Margin Sandbox
@@ -461,35 +462,57 @@ with col_dashboard:
                     # Recalculate quote with sandbox margin
                     sandbox_margin = round(custom_margin_pct / 100.0, 4)
                     base_labor = base_quote["base_labor_cost"]
-                    margin_amt = round(base_labor * sandbox_margin, 2)
-                    contingency = base_quote["contingency"]
+                    urgency_m = base_quote.get("urgency_multiplier", 1.0)
+                    base_labor_adj = base_quote.get("base_labor_cost_adjusted", base_labor)
+                    margin_amt = round(base_labor_adj * sandbox_margin, 2)
+                    contingency_r = base_quote.get("contingency_rate", 0.05)
+                    contingency = round(base_labor_adj * contingency_r, 2)
                     testing = base_quote["testing_fee"]
                     materials = base_quote["material_allowance"]
-                    final_total = round(base_labor + margin_amt + contingency + testing + materials, 2)
+                    subtotal = round(base_labor_adj + margin_amt + contingency + testing + materials, 2)
+                    vol_disc_rate = base_quote.get("volume_discount_rate", 0.0)
+                    vol_disc = round(subtotal * vol_disc_rate, 2)
+                    final_total = round(subtotal - vol_disc, 2)
                     
                     st.markdown("###### Itemized Cost Breakdown:")
+                    
+                    line_items = ["Engineering Base Labor"]
+                    descriptions = [f"Total {total_hours:.0f} engineering hours"]
+                    costs = [f"${base_labor:,.2f}"]
+                    
+                    if urgency_m > 1.0:
+                        line_items.append(f"Urgency Surcharge ({urgency_m:.0%})")
+                        descriptions.append("AOG/Rush overtime & mobilization")
+                        costs.append(f"${round(base_labor_adj - base_labor, 2):,.2f}")
+                    
+                    line_items += [
+                        f"Customer Margin ({custom_margin_pct:.1f}%)",
+                        f"Contingency ({contingency_r*100:.0f}% risk-based)",
+                        "Testing & Certification Fee",
+                        f"Material Allowance ({fleet_sz} a/c)"
+                    ]
+                    descriptions += [
+                        f"Target margin for {c_class}",
+                        f"Risk profile: {'STC' if base_quote.get('contingency_rate', 0.05) >= 0.10 else 'Standard'}",
+                        f"{(facts.modification_type or 'cabin').upper()} / {complexity_val}",
+                        f"Per-aircraft kit × {fleet_sz}"
+                    ]
+                    costs += [
+                        f"${margin_amt:,.2f}",
+                        f"${contingency:,.2f}",
+                        f"${testing:,.2f}",
+                        f"${materials:,.2f}"
+                    ]
+                    
+                    if vol_disc > 0:
+                        line_items.append(f"Volume Discount ({vol_disc_rate*100:.0f}%)")
+                        descriptions.append(f"Fleet {fleet_sz} aircraft discount")
+                        costs.append(f"-${vol_disc:,.2f}")
+                    
                     breakdown_df = pd.DataFrame({
-                        "Line Item": [
-                            "Engineering Base Labor",
-                            f"Customer Margin ({custom_margin_pct:.1f}%)",
-                            "Contingency Allowance (5.0%)",
-                            "Testing & Certification Fee",
-                            "Material Allowance"
-                        ],
-                        "Description": [
-                            f"Total {total_hours:.0f} engineering hours",
-                            f"Target margin for {c_class}",
-                            "Unforeseen technical risks",
-                            "Fixed authority approval package",
-                            f"Allowance for {fleet_sz} aircraft"
-                        ],
-                        "Cost (USD)": [
-                            f"${base_labor:,.2f}",
-                            f"${margin_amt:,.2f}",
-                            f"${contingency:,.2f}",
-                            f"${testing:,.2f}",
-                            f"${materials:,.2f}"
-                        ]
+                        "Line Item": line_items,
+                        "Description": descriptions,
+                        "Cost (USD)": costs
                     })
                     st.table(breakdown_df)
                     
@@ -515,11 +538,16 @@ with col_dashboard:
                         gaps=gaps,
                         quote={
                             "base_labor_cost": base_labor,
+                            "urgency_multiplier": urgency_m,
+                            "base_labor_cost_adjusted": base_labor_adj,
                             "margin_applied": sandbox_margin,
                             "margin_amount": margin_amt,
+                            "contingency_rate": contingency_r,
                             "contingency": contingency,
                             "testing_fee": testing,
                             "material_allowance": materials,
+                            "volume_discount_rate": vol_disc_rate,
+                            "volume_discount": vol_disc,
                             "total_cost": final_total
                         },
                         email_draft=""

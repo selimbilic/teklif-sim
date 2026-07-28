@@ -1,0 +1,32 @@
+Kimden: teknik@anadolujet.com
+Kime: teklif@aerodesign.com
+Tarih: Salı, 28 Tem 2026 10:15:00 +0300
+Konu: ACİL AOG: King Air 350 Avionics Glass Cockpit Upgrade & DO-178C DAL A STC
+
+AeroDesign Mühendislik Ekibinin Dikkatine,
+
+Anadolu Jet filosunda yer alan 2 adet King Air 350 genel havacılık uçağımız (CS-23 sertifikasyon esası) için acil durum (AOG / Rush) kapsamında tam yetkili aviyonik modernizasyon teklifi talep ediyoruz.
+
+Proje Detayları:
+- Uçak Tipi: King Air 350 (CS-23 General Aviation / Commuter Aeroplane)
+- Filo Boyutu: 2 uçak
+- Müşteri Sınıfı: Anadolu Jet (Partner Account)
+- Uçuş Emniyeti (ARP4761 / DO-178C): DAL A (Catastrophic) seviyesinde Primary Flight Display (PFD) ve otopilot entegrasyonu (MC/DC ve Object Code Verification gereksinimi).
+- İş Durumu: AOG acil teslimat (Urgent Rush Delivery).
+
+İş Kapsamı:
+1. Analog göstergelerin sökülerek çift Garmin G1000 NXi Glass Cockpit sisteminin entegrasyonu.
+2. DO-178C DAL A yazılım ve DO-254 donanım doğrulama raporlarının hazırlanması.
+3. EASA Part 21 Major Change / STC onay paketinin çıkarılması.
+
+Mühendislik Adam/Saat Tahmini:
+- Sistem analizimizin hızlıca yapılarak tarafınızca hesaplanmasını (DOA Engine) talep ediyoruz.
+
+Acil teklifinizi ve AOG koşullarındaki teslimat sürenizi bekliyoruz.
+
+Saygılarımızla,
+
+Ahmet Yılmaz
+Aviyonik & Filo Mühendisliği Müdürü
+Anadolu Jet
+ahmet.yilmaz@anadolujet.com
