@@ -226,11 +226,7 @@ def calculate_quote(
         ica_hours = part21_info["ica_hours"]
         manhours_dict["certification_engineer"] = (manhours_dict.get("certification_engineer") or 0.0) + cve_hours + ica_hours
 
-    # 2. Validate inputs again after potential additions
-    for role, hours in manhours_dict.items():
-        if hours is not None and hours < 0:
-            raise ValueError(f"manhours for '{role}' cannot be negative: {hours}")
-
+    # 2. Parse rates and customer classes
     rates, customer_classes = load_data_files()
     
     if customer_class not in customer_classes:
