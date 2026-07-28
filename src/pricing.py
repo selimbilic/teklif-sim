@@ -239,9 +239,10 @@ def calculate_quote(
     # 3. Calculate Base Labor Cost
     base_labor_cost = 0.0
     for role, hours in manhours_dict.items():
-        if hours is not None:
-            rate = rates.get(role, 0.0)
-            base_labor_cost += hours * rate
+        if hours is not None and hours > 0:
+            if role not in rates:
+                raise ValueError(f"Unknown engineering role '{role}' in manhours. Available roles in rate card: {list(rates.keys())}")
+            base_labor_cost += hours * rates[role]
 
     # 4. [3.1] Apply AOG/Rush Urgency Surcharge to base labor
     urgency_mult = get_urgency_surcharge(strategy_string)
@@ -260,10 +261,12 @@ def calculate_quote(
     elif any(k in strategy_lower for k in ["premium", "rush", "aog", "acil", "hızlı", "hizli"]):
         margin_applied = max_margin
     elif any(k in strategy_lower for k in ["comp", "rekabet"]):
-        margin_applied = default_margin - 0.02
+        margin_applied = max(min_margin, default_margin - 0.02)
     else:
         margin_applied = default_margin
 
+    # Ensure margin_applied is strictly within [min_margin, max_margin]
+    margin_applied = max(min_margin, min(max_margin, margin_applied))
     margin_applied = round(margin_applied, 4)
 
     # 6. Get Part 21 info for contingency calculation

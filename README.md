@@ -1,10 +1,14 @@
 # TEKLİF-Sim (Aviation DOA Proposal Simulator)
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](CHANGELOG.md) [![Python](https://img.shields.io/badge/python-3.13-green.svg)](https://www.python.org/) [![EASA Part 21](https://img.shields.io/badge/EASA-Part%2021-red.svg)](https://www.easa.europa.eu/) [![Tests](https://img.shields.io/badge/tests-44%2F44%20passing-brightgreen.svg)](tests/)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](CHANGELOG.md) [![Python](https://img.shields.io/badge/python-3.13-green.svg)](https://www.python.org/) [![EASA Part 21](https://img.shields.io/badge/EASA-Part%2021-red.svg)](https://www.easa.europa.eu/) [![Tests](https://img.shields.io/badge/tests-46%2F46%20passing-brightgreen.svg)](tests/)
 
 **TEKLİF-Sim**, havayolu müşterilerinden gelen uçak modifikasyon taleplerini (kabin, yapısal, aviyonik) analiz eden, EASA Part 21 ve CS-25/CS-23 standartlarına göre regülasyon sınıflandırması yapan, eksik bilgileri belirleyen ve kurallara dayalı %100 deterministik fiyat teklifleri hazırlayan bağımsız bir yapay zeka ve mühendislik simülasyon uygulamasıdır.
 
 *TEKLİF-Sim is a standalone AI and engineering simulation platform for aviation Design Organisation Approvals (DOA). It analyzes aircraft modification emails, classifies EASA Part 21 & CS-25/23 regulatory specifications, detects information gaps, and calculates 100% deterministic proposals.*
+
+> [!WARNING]
+> **🔒 Veri Gizliliği ve Güvenlik Uyarısı / Privacy & Data Security Disclaimer:**
+> Bu uygulama, gelen e-postaları analiz etmek için halka açık **Google Gemini API** servisini kullanmaktadır. KVKK, GDPR ve kurumsal gizlilik politikaları gereği, **gerçek müşteri e-posta adresleri, ticari sırlar, kişisel veriler veya gizli sözleşme detayları sisteme girilmemelidir.** Lütfen yalnızca sentetik, anonimleştirilmiş veya kamuya açık test verileri kullanınız.
 
 ---
 
@@ -14,7 +18,8 @@ Projede **Semantic Versioning (SemVer - MAJOR.MINOR.PATCH)** standartları uygul
 
 | Sürüm / Version | Yayın Tarihi | Açıklama / Highlights | Git Tag |
 | :--- | :--- | :--- | :--- |
-| **`v2.0.0`** (Mevcut) | 2026-07-28 | **EASA Compliance & Aviation Mathematics Overhaul:** DO-178C Annex A 5 kademeli DAL emniyet çarpanları (A=2.4x - E=1.0x), NRE + Wright %80 learning curve filo ölçekleme, CS-23 tüm rollere azaltma, mod tipine özel test & malzeme payı, risk bazlı contingency (%4-%15), EWIS & ICA saatleri, AOG/Rush sürşarjı ve 44/44 birim testleri. | [`v2.0.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v2.0.0) |
+| **`v2.0.1`** (Mevcut) | 2026-07-28 | **Security & Pricing Engine Hardening:** `app.py` üzerinde HTML Injection / XSS koruması (`html.escape`), kamuya açık LLM veri gizliliği uyarısı, `pricing.py` içinde bilinmeyen rol doğrulama hatası (`ValueError`), `competitive` marjının taban marja clamp edilmesi ve 46/46 birim testleri. | [`v2.0.1`](https://github.com/selimbilic/teklif-sim/releases/tag/v2.0.1) |
+| **`v2.0.0`** | 2026-07-28 | **EASA Compliance & Aviation Mathematics Overhaul:** DO-178C Annex A 5 kademeli DAL emniyet çarpanları (A=2.4x - E=1.0x), NRE + Wright %80 learning curve filo ölçekleme, CS-23 tüm rollere azaltma, mod tipine özel test & malzeme payı, risk bazlı contingency (%4-%15), EWIS & ICA saatleri, AOG/Rush sürşarjı ve 44/44 birim testleri. | [`v2.0.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v2.0.0) |
 | **`v1.3.0`** | 2026-07-27 | **Aviation Precision & Safety DAL Wiring Release:** ARP4761 DAL emniyet çarpanının fiyatlandırmaya bağlanması, esnek DAL metin ayrıştırma, CS-23/CS-25 adam-saat katsayıları, fleet_size <= 0 veri doğrulaması ve 30/30 birim testleri. | [`v1.3.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.3.0) |
 | **`v1.2.0`** | 2026-07-27 | **Streamlit Action Button Execution Guard:** Buton tıklama bağımlılığı (`analyze_click`), LLM Extraction `@st.cache_data` önbellekleme, AST unused button compliance testi ve Headless Streamlit AppTest paket entegrasyonu. | [`v1.2.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.2.0) |
 | **`v1.1.0`** | 2026-07-24 | EASA Part 21.A.91 (Minor vs Major STC) sınıflandırması, **CS-25 & CS-23** sabit kanat sertifikasyon motoru, ARP4761 emniyet DAL seviyeleri (DAL A-E), 7 özel proje kategorisi, **Gaps-Locked Fiyat Koruması** ve 10 sentetik test senaryosu. | [`v1.1.0`](https://github.com/selimbilic/teklif-sim/releases/tag/v1.1.0) |

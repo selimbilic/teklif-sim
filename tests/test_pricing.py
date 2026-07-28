@@ -222,3 +222,22 @@ def test_cve_ica_added_to_customer_hours():
     )
     # IFC major STC → CVE=60, ICA=45 → total cert = 20 + 60 + 45 = 125
     assert quote["manhours_used"]["certification_engineer"] == 125.0
+
+# Test Case 16: Unknown role in manhours raises ValueError
+def test_unknown_role_raises_value_error():
+    manhours = {"electrical_engineer_unknown": 50.0}
+    with pytest.raises(ValueError, match="Unknown engineering role"):
+        calculate_quote(manhours, "flagship", "standard")
+
+# Test Case 17: Competitive margin is clamped to min_margin
+def test_competitive_margin_clamped_to_min_margin():
+    quote = calculate_quote(
+        manhours={"cabin_design_engineer": 50},
+        customer_class="flagship",
+        strategy_string="competitive",
+        fleet_size=1
+    )
+    # Flagship class: min_margin=0.05, default=0.10. Default-0.02 = 0.08 >= 0.05.
+    assert quote["margin_applied"] >= 0.05
+    assert quote["margin_applied"] <= 0.15
+

@@ -1,5 +1,6 @@
 import os
 import sys
+import html
 # Add project root directory to sys.path to resolve ModuleNotFoundError in Streamlit
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -29,6 +30,12 @@ from src.pricing import calculate_quote, load_data_files, get_urgency_surcharge
 from src.summarize import generate_proposal_summary
 from src.__version__ import __version__
 from src.estimation import resolve_cert_basis, classify_part21_change
+
+def safe_html(val: Any) -> str:
+    """Sanitizes user and LLM string inputs against HTML injection / XSS attacks."""
+    if val is None:
+        return "N/A"
+    return html.escape(str(val))
 
 # Set Streamlit Page Configuration
 st.set_page_config(
@@ -218,7 +225,8 @@ with col_input:
         placeholder="Paste customer email text here...",
         key="main_email_textarea"
     )
-    
+    st.caption("🔒 **Privacy & Data Security Notice:** This system uses public Gemini API for extraction. Do NOT input confidential or personal customer data. Use synthetic data only.")
+
     st.markdown("##### ⚙️ Configuration:")
     cfg_col1, cfg_col2 = st.columns(2)
     
@@ -262,7 +270,7 @@ with col_dashboard:
             st.markdown(f"""
             <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
                 🔑 <b>CONFIG WARNING: GEMINI_API_KEY NOT FOUND</b><br>
-                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'GEMINI_API_KEY is not configured in your environment variables or .env file.'}</span><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{safe_html(err_msg) if err_msg else 'GEMINI_API_KEY is not configured in your environment variables or .env file.'}</span><br>
                 <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">Please create a <code>.env</code> file in the project root with <code>GEMINI_API_KEY=your_key_here</code> to enable AI extraction.</span>
             </div>
             """, unsafe_allow_html=True)
@@ -270,7 +278,7 @@ with col_dashboard:
             st.markdown(f"""
             <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
                 ⏳ <b>RATE LIMIT / QUOTA EXHAUSTED (429)</b><br>
-                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'Gemini API rate limit or quota exceeded.'}</span><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{safe_html(err_msg) if err_msg else 'Gemini API rate limit or quota exceeded.'}</span><br>
                 <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">The free API rate limit or quota has been reached. Please wait a few moments before trying again or verify your Gemini API plan.</span>
             </div>
             """, unsafe_allow_html=True)
@@ -278,7 +286,7 @@ with col_dashboard:
             st.markdown(f"""
             <div class="banner-danger" style="padding: 1rem; line-height: 1.5;">
                 🌐 <b>API COMMUNICATION ERROR</b><br>
-                <span style="font-size: 0.85rem; color: #7f1d1d;">{err_msg or 'Failed to communicate with Gemini API service.'}</span><br>
+                <span style="font-size: 0.85rem; color: #7f1d1d;">{safe_html(err_msg) if err_msg else 'Failed to communicate with Gemini API service.'}</span><br>
                 <span style="font-size: 0.82rem; color: #991b1b; display: block; margin-top: 4px;">Please check your network connection or verify API service status.</span>
             </div>
             """, unsafe_allow_html=True)
@@ -337,7 +345,7 @@ with col_dashboard:
                 st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label">Aircraft / Fleet</div>
-                    <div class="metric-value">{facts.aircraft_type or 'N/A'} ({facts.fleet_size or 'N/A'})</div>
+                    <div class="metric-value">{safe_html(facts.aircraft_type)} ({safe_html(facts.fleet_size)})</div>
                 </div>
                 """, unsafe_allow_html=True)
             with kpi2:
