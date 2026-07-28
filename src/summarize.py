@@ -1,6 +1,7 @@
 from typing import Dict, List, Any
 from src.extract import EmailExtraction
 from src.estimation import resolve_cert_basis, classify_part21_change
+from src.__version__ import __version__
 
 def generate_proposal_summary(
     facts: EmailExtraction, 
@@ -10,7 +11,7 @@ def generate_proposal_summary(
 ) -> str:
     """
     Generates a clean one-page proposal summary markdown report with
-    EASA Part 21 certification details and v2.0.0 itemized cost breakdown.
+    EASA Part 21 certification details and itemized cost breakdown.
     """
     status = "⚠️ PENDING INFORMATION (EKSİK BİLGİ TALEBİ)" if gaps else "✅ READY FOR REVIEW (TEKLİF HAZIR)"
     cert_basis = getattr(facts, "cert_basis", None) or resolve_cert_basis(facts.aircraft_type)
@@ -88,5 +89,5 @@ def generate_proposal_summary(
         summary += "| --- | --- | --- |\n"
         summary += f"| **TOTAL QUOTE / TOPLAM TEKLİF** | **Net Price** | **${quote['total_cost']:,.2f}** |\n"
         
-    summary += "\n---\n*Report generated automatically by TEKLİF-Sim Proposal Assistant (v2.0.0).* "
+    summary += f"\n---\n*Report generated automatically by TEKLİF-Sim Proposal Assistant (v{__version__}).* "
     return summary
