@@ -120,7 +120,7 @@ Kök dizinde bir `.env` dosyası oluşturup Gemini API anahtarınızı ekleyin:
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### 3. Test Suitini Çalıştırma (46/46 PASS)
+### 3. Test Suitini Çalıştırma (52/52 PASS)
 ```bash
 .\.venv\Scripts\pytest
 ```
@@ -150,5 +150,19 @@ Arayüze tarayıcınızdan **http://localhost:8501** adresi üzerinden erişebil
 * **ADR-06: DO-178C / ARP4761 5 Kademeli Emniyet Çarpanları:** Yazılım ve sistem emniyet maliyetleri keyfi oranlar yerine doğrudan DO-178C Ek A doğrulama hedeflerine oranlanmıştır: DAL A (2.4x - 71 hedef), DAL B (2.0x - 69 hedef), DAL C (1.5x - 62 hedef), DAL D (1.15x - 26 hedef), DAL E (1.0x - 0 hedef).
 * **ADR-07: Streamlit Action Button Event Guarding:** Streamlit arayüzünde herhangi bir slider veya seçim kutusu değiştirildiğinde pahalı LLM çağrılarının gereksiz yere tekrar tetiklenmesini önlemek için LLM analizi `st.session_state` uyarınca sadece açık buton tıklamasına (`st.button`) bağlanmıştır.
 * **ADR-08: Clean-Room & Güvenlik Uyum Koruması:** KVKK/GDPR ve ticari sır mevzuatına uyum sağlamak için kod tabanında gerçek havayolu isimleri, müşteriye özel fiyat listeleri veya canlı API anahtarları kesinlikle barındırılmaz; AST statik analiz testleri (`test_compliance.py`) ile temiz-oda sınırı denetlenir.
+
+---
+
+## 🔮 Gelecek Sürüm Yol Haritası (v3.0.0 Future Roadmap)
+
+Gelecekteki **`v3.0.0`** ana sürümünde projeye eklenmesi planlanan stratejik modüller ve geliştirmeler:
+
+1. **📄 Kurumsal PDF & Word Teklif Çıktısı (Export Engine):** Teklif özetlerinin `reportlab` veya `python-docx` kütüphaneleri kullanılarak kurumsal antetli, logo destekli, resmi EASA Part 21 formatında indirilebilir PDF ve Word dokümanlarına dönüştürülmesi.
+2. **🗄️ Veritabanı ve Veri Kalıcılığı Katmanı (Persistence Layer):** SQLite / PostgreSQL veritabanı entegrasyonu ile tüm geçmiş tekliflerin kaydedilmesi, "geçen yıl benzer projeye verilen fiyat" sorgulamaları, CRM müşteri geçmişi ve analitik dashboard'lar.
+3. **⚡ FastAPI REST Servis Katmanı (Enterprise Integration):** Fiyatlandırma (`pricing.py`) ve adam-saat tahmin (`estimation.py`) motorlarının REST API olarak dış dünyaya sunulması; kurumsal SAP/ERP sistemleri ile doğrudan entegrasyon imkanı.
+4. **🎲 Monte-Carlo Belirsizlik & Güven Aralığı Analizi:** Tahmin parametrelerindeki belirsizlikleri yönetmek için Monte-Carlo simülasyonu ile P10 / P50 / P90 güven aralıkları ve "En İyi / Beklenen / En Kötü Senaryo" teklif katmanları.
+5. **🚁 Helikopter ve Döner Kanat Desteği (CS-27 / CS-29):** Sabit kanatlı uçaklara (CS-25/23) ek olarak CS-27 (Küçük Rotorcraft) ve CS-29 (Büyük Rotorcraft) sertifikasyon esasları ve helikopter modifikasyon katsayıları.
+6. **💱 Çoklu Döviz & Bölgesel Vergi Yönetimi:** Fiyat tekliflerinde USD dışındaki para birimleri (EUR, GBP, TRY) ve bölgesel KDV/vergi hesaplamaları.
+
 
 
