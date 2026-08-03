@@ -1,0 +1,12 @@
+# TEKLİF-Sim v2.1.0 Locked Dependencies
+# Generated for production deployment stability
+
+google-genai==1.0.0
+streamlit==1.42.0
+pytest==9.1.1
+pandas==2.2.3
+python-dotenv==1.0.1
+pydantic==2.10.6
+pyyaml==6.0.2
+pluggy==1.6.0
+anyio==4.14.2

@@ -1,0 +1,25 @@
+Kimden: engineering@turkisyairways.com
+Kime: teklif@aerodesign.com
+Tarih: Salı, 28 Tem 2026 15:00:00 +0300
+Konu: RFP / Teklif Talebi: 15x B777-300ER Avionics & Satellite IFC Dual Radome STC (Bilingual RFP)
+
+Dear AeroDesign Engineering Team / Sayın AeroDesign Mühendislik Ekibi,
+
+Turkis Airways olarak 15 adet Boeing 777-300ER uçağımızın aviyonik ve internet haberleşme altyapısını modernize etmek istiyoruz (Bilingual Request for Proposal).
+
+Project & Aircraft Specifications:
+- Aircraft Model: Boeing 777-300ER (CS-25 Commercial Transport)
+- Fleet Size / Filo Adedi: 15 aircraft / 15 adet uçak
+- Customer Account: Turkis Airways (Partner Account)
+- Modification Type: Dual IFC (Satellite Wi-Fi) & Avionics Glass Cockpit Upgrade
+- Safety Level / Emniyet Seviyesi: ARP4761 DAL B (Hazardous), CS 25.1707 EWIS compliance analysis mandatory.
+- Scope / İş Kapsamı: Crown structural doubler cutout, ARINC 429 avionics bus integration, DO-178C software compliance reports, and full EASA Part 21 Major STC approval sheet.
+
+Hem Türkçe hem İngilizce dokümantasyon desteği ve acil (Rush / Urgent delivery) teslimat opsiyonu ile teklifinizi bekliyoruz.
+
+Best regards / Saygılarımızla,
+
+Dr. Mehmet Özkan
+Head of Technical & Fleet Modifications
+Turkis Airways
+mehmet.ozkan@turkisyairways.com

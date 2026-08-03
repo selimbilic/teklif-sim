@@ -1,0 +1,23 @@
+Kimden: teknik@skywings.com
+Kime: teklif@aerodesign.com
+Tarih: Salı, 28 Tem 2026 14:00:00 +0300
+Konu: Uçak İçi ELAMS Elektrik Yük Analizi ve Kabin Yenileme Teklifi (Filo: 0 Uçak)
+
+AeroDesign Mühendislik Ekibine,
+
+SkyWings Havayolları bünyesinde henüz tescili yapılmamış (0 uçaklık mevcut aktüel filo) Boeing 737-800 projesi için ön fizibilite mühendislik teklifi istiyoruz.
+
+Proje Bilgileri:
+- Uçak Tipi: Boeing 737-800 (CS-25)
+- Filo Boyutu: 0 uçak (Teslimat bekleniyor, opsiyonel 0 adet uçak)
+- Modifikasyon Türü: ELAMS (Electrical Load Analysis) ve Kabin İçi Yenileme
+- Emniyet Seviyesi: DAL D
+
+Sıfır (0) uçaklık mevcut envanter durumu dikkate alınarak eksik bilgi veya ön teklif durumunuzu iletmenizi rica ederiz.
+
+Saygılarımızla,
+
+Caner Erdem
+Mühendislik Departmanı
+SkyWings Havayolları
+caner.erdem@skywings.com

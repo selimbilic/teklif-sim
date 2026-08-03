@@ -1,0 +1,27 @@
+From: fleet@eurocargopress.com
+To: proposals@aerodesign.com
+Date: Tue, 28 Jul 2026 15:30:00 +0300
+Subject: URGENT AOG / RUSH RFP: Major Structural Cargo Door Cutout STC & Avionics DAL A for 30x A330-300
+
+Dear AeroDesign Engineering Team,
+
+Euro Cargo Express requires an URGENT AOG RUSH engineering package for a major Passenger-to-Freighter (P2F) cargo conversion and primary flight display avionics upgrade across 30 Airbus A330-300 aircraft.
+
+Project Parameters:
+- Aircraft Model: Airbus A330-300 (CS-25 Large Transport Aeroplane)
+- Fleet Size: 30 aircraft
+- Account Class: Euro Cargo Express (Partner Account)
+- Urgency: AOG / Rush Delivery (Critical 3-day mobilization needed)
+- Modification Type: Structural Cargo P2F Conversion & Avionics Glass Cockpit Upgrade
+- Safety Classification: ARP4761 DAL A (Catastrophic) for primary flight control bus & DO-178C software verification
+- Certification Basis: EASA Part 21 Major Change / STC Approval under CS-25.571 Damage Tolerance and CS 25.1707 EWIS requirements.
+- Scope: Fuselage main cargo door cutout, surround doubler stress analysis, 9G rigid barrier net, DAL A software verification (MC/DC), and full ICA documentation.
+
+Please process this request under AOG/Rush urgency rates with 30-aircraft volume discount and fleet learning curve scaling.
+
+Sincerely,
+
+Victor Kravchenko
+Director of Cargo Fleet Maintenance
+Euro Cargo Express
+v.kravchenko@eurocargopress.com

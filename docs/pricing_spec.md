@@ -1,140 +1,93 @@
-# Fiyatlandırma Spesifikasyonu (Pricing Specification)
+# Fiyatlandırma Spesifikasyonu (Pricing Specification v2.0.0)
 
-Bu doküman, `src/pricing.py` fiyatlandırma motorunun test edilmesinde kullanılacak olan elle hesaplanmış test senaryolarını (test cases) tanımlar. Fiyat motoru geliştirilmeden önce bu spesifikasyon referans alınarak testler yazılacaktır.
-
----
-
-## 1. Fiyatlandırma Kuralları (Pricing Rules)
-
-### Mühendislik Saat Ücretleri (Labor Rates)
-`data/rate_card.csv` dosyasından okunur:
-- `cabin_design_engineer`: $95.00
-- `structural_engineer`: $110.00
-- `avionics_design_engineer`: $105.00
-- `certification_engineer`: $80.00
-- `project_manager`: $120.00
-
-### Müşteri Sınıfları ve Marjları (Margin Bands)
-`data/customer_classes.json` dosyasından okunur:
-- **Flagship (Flagship & Internal):** min %5 - max %15 (Varsayılan: %10)
-- **Partner (Alliance & Partner):** min %15 - max %30 (Varsayılan: %22)
-- **Third Party (Standard Third-Party):** min %30 - max %50 (Varsayılan: %40)
-
-### Strateji Eşleme Kuralları (Strategy Mapping Rules)
-Metinsel strateji girdileri şu şekilde eşleştirilir:
-- **"cheapest possible" / "cheapest" / "en ucuz":** Kâr marjı alt sınırı (**floor** - `min_margin`).
-- **"premium" / "rush" / "AOG" / "acil" / "hızlı":** Kâr marjı üst sınırı (**ceiling** - `max_margin`).
-- **"competitive" / "rekabetçi":** Varsayılan marjın 2 puan altı (`default_margin - 0.02`).
-- **Diğer / Eşleşmeyen:** Varsayılan marj (**default** - `default_margin`).
-
-### Sabit Ücretler (Fixed Fees)
-- **Testing & Certification Fee:** Sabit $1,500.00
-- **Material Allowance:** Uçak başına $500.00 (Miktar × $500.00)
-- **Contingency (Beklenmedik Durum Payı):** Temel İşçilik Ücretinin %5'i (pre-margin)
+Bu doküman, `src/pricing.py` v2.0.0 fiyatlandırma motorunun iş kurallarını, modifikasyon türüne duyarlı maliyet tablolarını, risk bazlı contingency oranlarını, aciliyet sürşarjlarını ve test senaryolarını tanımlar.
 
 ---
 
-## 2. Elle Hesaplanmış Test Vakaları (Hand-Calculated Test Cases)
+## 1. Fiyatlandırma Kuralları (Pricing Rules v2.0.0)
 
-### Vaka 1: Flagship Müşteri - En Ucuz Strateji - 5 Uçak
-- **Saatler:** Cabin: 80, Structural: 40, Certification: 20, PM: 10
-- **Hesaplama:**
-  - Cabin Labor: 80 × $95 = $7,600
-  - Structural Labor: 40 × $110 = $4,400
-  - Certification Labor: 20 × $80 = $1,600
-  - PM Labor: 10 × $120 = $1,200
-  - **Temel İşçilik (Base Labor):** $7,600 + $4,400 + $1,600 + $1,200 = $14,800.00
-  - **Kâr Marjı:** %5 (Flagship floor) -> $14,800 × 0.05 = $740.00
-  - **Contingency:** %5 of Base Labor -> $14,800 × 0.05 = $740.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 5 × $500 = $2,500.00
-- **Beklenen Toplam:** $14,800 + $740 + $740 + $1,500 + $2,500 = **$20,280.00**
+### 1.1 Mühendislik Saat Ücretleri (Rate Card)
+`data/rate_card.csv` dosyasından dinamik olarak okunur:
+- `cabin_design_engineer`: $95.00/saat
+- `structural_engineer`: $110.00/saat
+- `avionics_design_engineer`: $105.00/saat
+- `certification_engineer`: $80.00/saat
+- `project_manager`: $120.00/saat
 
-### Vaka 2: Flagship Müşteri - Rekabetçi Strateji - 5 Uçak
-- **Saatler:** Cabin: 80, Structural: 40, Certification: 20, PM: 10 (Aynı)
-- **Hesaplama:**
-  - Base Labor: $14,800.00
-  - **Kâr Marjı:** %8 (Flagship competitive: 10% - 2%) -> $14,800 × 0.08 = $1,184.00
-  - **Contingency:** $740.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** $2,500.00
-- **Beklenen Toplam:** $14,800 + $1,184 + $740 + $1,500 + $2,500 = **$20,724.00**
+### 1.2 Müşteri Sınıfları ve Marj Bantları (Margin Bands)
+`data/customer_classes.json` dosyasından dinamik olarak okunur:
+- **Flagship (Bayrak Taşıyıcı & İç Hesap):** min %5 - default %10 - max %15
+- **Partner (İttifak & Ortak Hesap):** min %15 - default %22 - max %30
+- **Third Party (Üçüncü Taraf Standard):** min %30 - default %40 - max %50
 
-### Vaka 3: Third Party Müşteri - Acil (Rush) Strateji - 1 Uçak
-- **Saatler:** Structural: 60, Certification: 15, PM: 5
-- **Hesaplama:**
-  - Structural Labor: 60 × $110 = $6,600
-  - Certification Labor: 15 × $80 = $1,200
-  - PM Labor: 5 × $120 = $600
-  - **Temel İşçilik (Base Labor):** $6,600 + $1,200 + $600 = $8,400.00
-  - **Kâr Marjı:** %50 (Third Party max_margin/ceiling) -> $8,400 × 0.50 = $4,200.00
-  - **Contingency:** $8,400 × 0.05 = $420.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 1 × $500 = $500.00
-- **Beklenen Toplam:** $8,400 + $4,200 + $420 + $1,500 + $500 = **$15,020.00**
+### 1.3 Strateji Eşleme Kuralları (Strategy Mapping)
+- **"cheapest possible" / "cheapest" / "en ucuz":** Kâr marjı alt sınırı (`min_margin`).
+- **"premium" / "rush" / "AOG" / "acil" / "hızlı":** Kâr marjı üst sınırı (`max_margin`).
+- **"competitive" / "rekabetçi":** `max(min_margin, default_margin - 0.02)`.
+- **Diğer / Eşleşmeyen:** Varsayılan marj (`default_margin`).
 
-### Vaka 4: Partner Müşteri - Belirsiz Strateji (Varsayılan Marj) - 8 Uçak
-- **Saatler:** Structural: 150, Avionics: 100, Certification: 40, PM: 20
-- **Hesaplama:**
-  - Structural: 150 × $110 = $16,500
-  - Avionics: 100 × $105 = $10,500
-  - Certification: 40 × $80 = $3,200
-  - PM: 20 × $120 = $2,400
-  - **Base Labor:** $16,500 + $10,500 + $3,200 + $2,400 = $32,600.00
-  - **Kâr Marjı:** %22 (Partner default_margin) -> $32,600 × 0.22 = $7,172.00
-  - **Contingency:** $32,600 × 0.05 = $1,630.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 8 × $500 = $4,000.00
-- **Beklenen Toplam:** $32,600 + $7,172 + $1,630 + $1,500 + $4,000 = **$46,902.00**
+---
 
-### Vaka 5: Third Party Müşteri - En Ucuz Strateji - 12 Uçak
-- **Saatler:** Cabin: 120, Certification: 30, PM: 10
-- **Hesaplama:**
-  - Cabin: 120 × $95 = $11,400
-  - Certification: 30 × $80 = $2,400
-  - PM: 10 × $120 = $1,200
-  - **Base Labor:** $11,400 + $2,400 + $1,200 = $15,000.00
-  - **Kâr Marjı:** %30 (Third Party floor) -> $15,000 × 0.30 = $4,500.00
-  - **Contingency:** $15,000 × 0.05 = $750.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 12 × $500 = $6,000.00
-- **Beklenen Toplam:** $15,000 + $4,500 + $750 + $1,500 + $6,000 = **$27,750.00**
+## 2. Dinamik Maliyet ve Risk Bileşenleri (v2.0.0 Enhancements)
 
-### Vaka 6: Partner Müşteri - Rekabetçi Strateji - 2 Uçak
-- **Saatler:** Cabin: 50, Avionics: 50, Certification: 15, PM: 5
-- **Hesaplama:**
-  - Cabin: 50 × $95 = $4,750
-  - Avionics: 50 × $105 = $5,250
-  - Certification: 15 × $80 = $1,200
-  - PM: 5 × $120 = $600
-  - **Base Labor:** $4,750 + $5,250 + $1,200 + $600 = $11,800.00
-  - **Kâr Marjı:** %20 (Partner competitive: 22% - 2%) -> $11,800 × 0.20 = $2,360.00
-  - **Contingency:** $11,800 × 0.05 = $590.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 2 × $500 = $1,000.00
-- **Beklenen Toplam:** $11,800 + $2,360 + $590 + $1,500 + $1,000 = **$17,250.00**
+### 2.1 Aciliyet Sürşarjı (AOG / Rush Urgency Surcharge)
+Sadece Temel İşçilik Maliyetine (`base_labor_cost`) uygulanır:
+- **Normal:** 1.00x (Sürşarj yok)
+- **Rush / Acil / Hızlı:** 1.25x (%25 sürşarj)
+- **AOG (Aircraft On Ground):** 1.50x (%50 sürşarj)
 
-### Vaka 7: Third Party Müşteri - Varsayılan Strateji - 1 Uçak
-- **Saatler:** Avionics: 100, Certification: 25, PM: 10
-- **Hesaplama:**
-  - Base Labor: (100 × $105) + (25 × $80) + (10 × $120) = $10,500 + $2,000 + $1,200 = $13,700.00
-  - **Kâr Marjı:** %40 (Third Party default) -> $13,700 × 0.40 = $5,480.00
-  - **Contingency:** $13,700 × 0.05 = $685.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 1 × $500 = $500.00
-- **Beklenen Toplam:** $13,700 + $5,480 + $685 + $1,500 + $500 = **$21,865.00**
+### 2.2 Modifikasyon Türüne ve Karmaşıklığa Duyarlı Test Ücreti (Testing Fee Table)
+Sertifikasyon standartları (CS-25.1309, DO-160G EMI/EMC, statik testler) uyarınca belirlenen sabit test ücretleridir ($ USD):
 
-### Vaka 8: Flagship Müşteri - Acil (Rush) Strateji - 3 Uçak
-- **Saatler:** Cabin: 150, Structural: 100, Avionics: 50, Certification: 30, PM: 20
+| Modifikasyon Türü | Minor | Standard | Major |
+|---|---|---|---|
+| `cabin` / `cabin_lopa` | $800 / $1,000 | $2,500 / $3,000 | $6,000 / $7,000 |
+| `structural` / `repair` | $2,000 / $1,500 | $7,000 / $5,000 | $18,000 / $14,000 |
+| `avionics` | $2,500 | $8,500 | $20,000 |
+| `cargo` (P2F STC) | $5,000 | $18,000 | $40,000 |
+| `ifc` (Satellite Wi-Fi) | $3,500 | $12,000 | $25,000 |
+| `ife` / `isps` | $2,000 / $1,500 | $7,000 / $5,000 | $16,000 / $12,000 |
+| `elams` / `gain` | $1,000 / $1,200 | $3,500 / $4,000 | $8,000 / $10,000 |
+
+### 2.3 Uçak Başına Malzeme Ödeneği (Material Allowance per Aircraft)
+Uçak başına modifikasyon ve kit maliyetleridir ($ USD):
+
+| Modifikasyon Türü | Minor | Standard | Major |
+|---|---|---|---|
+| `cabin` | $250 | $1,500 | $5,000 |
+| `structural` | $800 | $4,000 | $15,000 |
+| `avionics` | $1,000 | $5,000 | $12,000 |
+| `cargo` | $5,000 | $25,000 | $80,000 |
+| `ifc` | $3,000 | $15,000 | $30,000 |
+
+### 2.4 Risk Bazlı Beklenmedik Durum Payı (Risk-Based Contingency)
+AACE Uluslararası Havacılık Standartları uyarınca proje karmaşıklığı ve STC gereksinimine göre düzeltilmiş temel işçilik üzerinden hesaplanır:
+
+| Karmaşıklık | STC Gerekmiyor (Minor/Major Change) | STC Gerekiyor (Major STC) |
+|---|---|---|
+| **Minor** | %4 | %6 |
+| **Standard** | %7 | %10 |
+| **Major** | %10 | %15 |
+
+### 2.5 Büyük Filo İndirimi (Volume Discount)
+Filo büyüklüğüne göre ara toplama (subtotal) uygulanan indirim oranı:
+- **Filo < 20:** %0
+- **20 $\le$ Filo < 50:** %5 indirim
+- **Filo $\ge$ 50:** %10 indirim
+
+---
+
+## 3. Örnek Hesaplama Vakası (Sample Test Case v2.0.0)
+
+### Vaka 1: Flagship Müşteri - En Ucuz Strateji - 5 Uçak - Cabin Standard
+- **Girdi:** Cabin: 80h, Structural: 40h, Cert: 20h, PM: 10h ($n = 5$ uçak)
 - **Hesaplama:**
-  - Cabin: 150 × $95 = $14,250
-  - Structural: 100 × $110 = $11,000
-  - Avionics: 50 × $105 = $5,250
-  - Certification: 30 × $80 = $2,400
-  - PM: 20 × $120 = $2,400
-  - **Base Labor:** $14,250 + $11,000 + $5,250 + $2,400 + $2,400 = $35,300.00
-  - **Kâr Marjı:** %15 (Flagship ceiling) -> $35,300 × 0.15 = $5,295.00
-  - **Contingency:** $35,300 × 0.05 = $1,765.00
-  - **Testing Fee:** $1,500.00
-  - **Material Allowance:** 3 × $500 = $1,500.00
-- **Beklenen Toplam:** $35,300 + $5,295 + $1,765 + $1,500 + $1,500 = **$45,360.00**
+  - Base Labor: $(80 \times \$95) + (40 \times \$110) + (20 \times \$80) + (10 \times \$120) = \$14,800.00$
+  - **Urgency Multiplier:** Normal (1.0x) $\implies \$14,800.00$
+  - **Kâr Marjı:** %5 (Flagship floor) $\implies \$14,800 \times 0.05 = \$740.00$
+  - **Testing Fee (Cabin Standard):** $\$2,500.00$
+  - **Material Allowance (Cabin Standard, 5 Uçak):** $5 \times \$1,500 = \$7,500.00$
+  - **Contingency (Standard, STC yok):** %7 $\implies \$14,800 \times 0.07 = \$1,036.00$
+  - **Subtotal:** $\$14,800 + \$740 + \$2,500 + \$7,500 + \$1,036 = \mathbf{\$26,576.00}$
+  - **Volume Discount:** %0 ($5 < 20$)
+  - **Toplam Fiyat:** $\mathbf{\$26,576.00}$

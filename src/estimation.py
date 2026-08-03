@@ -108,8 +108,30 @@ EWIS_ADDITIONAL_HOURS: Dict[str, Dict[str, int]] = {
     "isps":     {"minor": 5,  "standard": 12, "major": 25},
     "avionics": {"minor": 3,  "standard": 10, "major": 20},
     "elams":    {"minor": 2,  "standard": 5,  "major": 10},
-    "cargo":    {"minor": 3,  "standard": 10, "major": 20},
+    "cargo":    {"minor": 5,  "standard": 15, "major": 35},
 }
+
+# EWIS aircraft category complexity multipliers (v2.1.0 Parametric Model)
+# CS 25.1707 EWIS routing analysis scales with aircraft size and harness run lengths
+EWIS_AIRCRAFT_WEIGHTS: Dict[str, float] = {
+    "widebody": 1.40,   # A330, A350, A380, B777, B787, B747
+    "narrowbody": 1.00, # A320, B737, E190, CS300
+    "regional": 0.70    # King Air, ATR, Cessna, Beechcraft
+}
+
+def get_ewis_complexity_weight(aircraft_type: Optional[str]) -> float:
+    """
+    Returns EWIS wiring complexity weight based on aircraft size/category.
+    """
+    if not aircraft_type:
+        return 1.0
+    ac = aircraft_type.lower().strip()
+    if any(wb in ac for wb in ["a330", "a350", "a380", "b777", "b787", "b747", "widebody"]):
+        return EWIS_AIRCRAFT_WEIGHTS["widebody"]
+    elif any(reg in ac for reg in ["king air", "cessna", "atr", "beechcraft", "piper"]):
+        return EWIS_AIRCRAFT_WEIGHTS["regional"]
+    return EWIS_AIRCRAFT_WEIGHTS["narrowbody"]
+
 
 # ---------------------------------------------------------------------------
 # [2.1] CVE Hours Table — Mod-type sensitive (Part 21.A.239(d))
@@ -424,8 +446,10 @@ def estimate_manhours(
     # 3. Get baseline hours
     base_dict = BASELINE_HOURS[mod_type][c_level].copy()
 
-    # 4. [2.4] Add EWIS hours (CS 25.1707-1733 / AMC 20-21)
-    ewis_extra = EWIS_ADDITIONAL_HOURS.get(mod_type, {}).get(c_level, 0)
+    # 4. [2.4 / 4.5] Add EWIS hours (CS 25.1707-1733 / AMC 20-21) with parametric aircraft weight
+    ewis_base_extra = EWIS_ADDITIONAL_HOURS.get(mod_type, {}).get(c_level, 0)
+    ewis_weight = get_ewis_complexity_weight(aircraft_type)
+    ewis_extra = round(ewis_base_extra * ewis_weight, 1)
     base_dict["avionics_design_engineer"] += ewis_extra
 
     # 5. [2.1 + 2.3] Add CVE + ICA hours to certification engineer

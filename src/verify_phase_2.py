@@ -1,5 +1,9 @@
 import os
 import sys
+
+# Add project root directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from src.extract import extract_facts
 from src.gaps import check_gaps, get_field_description
 

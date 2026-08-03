@@ -1,3 +1,9 @@
+"""
+Structured LLM Fact Extraction Module for TEKLİF-Sim (v2.1.0).
+Uses Gemini API with Pydantic validation, sliding-window rate limiting,
+prompt injection protection, and semantic bounds checking.
+"""
+
 import os
 import sys
 import json
@@ -7,11 +13,38 @@ from typing import Dict, Optional
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
-from google.genai.errors import APIError
 from dotenv import load_dotenv
+
+from src.logger import logger
+from src.rate_limiter import gemini_rate_limiter
 
 # Load environment variables
 load_dotenv()
+
+# Injection keywords to filter out malicious prompt overrides
+PROMPT_INJECTION_MARKERS = [
+    "ignore previous instructions",
+    "disregard all rules",
+    "system prompt",
+    "overwrite instructions",
+    "you are now an unrestricted",
+    "bypass safety"
+]
+
+import re
+
+def sanitize_input_text(email_text: str) -> str:
+    """
+    Sanitizes raw input text against prompt injection markers.
+    """
+    if not email_text:
+        return ""
+    for marker in PROMPT_INJECTION_MARKERS:
+        if re.search(re.escape(marker), email_text, flags=re.IGNORECASE):
+            logger.warning(f"Prompt injection marker detected and neutralized: '{marker}'")
+            email_text = re.sub(re.escape(marker), "[FILTERED_SECURITY_MARKER]", email_text, flags=re.IGNORECASE)
+    return email_text
+
 
 class ManhourBreakdown(BaseModel):
     cabin_design_engineer: Optional[float] = Field(None, description="Hours for cabin design engineer")
@@ -19,6 +52,7 @@ class ManhourBreakdown(BaseModel):
     avionics_design_engineer: Optional[float] = Field(None, description="Hours for avionics design engineer")
     certification_engineer: Optional[float] = Field(None, description="Hours for certification engineer")
     project_manager: Optional[float] = Field(None, description="Hours for project manager")
+
 
 class EmailExtraction(BaseModel):
     aircraft_type: Optional[str] = Field(
@@ -35,7 +69,7 @@ class EmailExtraction(BaseModel):
     )
     modification_type: Optional[str] = Field(
         None, 
-        description="Must be exactly one of: 'cabin', 'structural', 'avionics', 'cargo', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', 'structural_repair'."
+        description="Must be exactly one of: 'cabin', 'structural', 'avionics', 'cargo', 'ife', 'ifc', 'isps', 'elams', 'gain', 'cabin_lopa', or 'structural_repair'."
     )
     project_type: Optional[str] = Field(
         None,
@@ -59,7 +93,7 @@ class EmailExtraction(BaseModel):
     )
     fleet_size: Optional[int] = Field(
         None, 
-        description="Number of uçağı/aircraft to be modified. Must be a positive integer. Set to None if missing."
+        description="Number of aircraft to be modified. Must be a positive integer. Set to None if missing."
     )
     manhours: Optional[ManhourBreakdown] = Field(
         None, 
@@ -78,20 +112,51 @@ class EmailExtraction(BaseModel):
         description="User-friendly error message if API extraction or configuration failed."
     )
 
+
+def validate_semantic_bounds(facts: EmailExtraction) -> EmailExtraction:
+    """
+    Enforces semantic boundary checks on extracted facts to prevent absurd values.
+    Caps fleet_size between 0 and 500. Caps role manhours to <= 10,000h.
+    """
+    if facts.fleet_size is not None:
+        if facts.fleet_size < 0:
+            facts.fleet_size = None
+        elif facts.fleet_size > 500:
+            logger.warning(f"Extracted fleet_size {facts.fleet_size} exceeds upper bound of 500; capping to 500.")
+            facts.fleet_size = 500
+
+    if facts.manhours:
+        for role in ["cabin_design_engineer", "structural_engineer", "avionics_design_engineer", "certification_engineer", "project_manager"]:
+            val = getattr(facts.manhours, role, None)
+            if val is not None:
+                if val < 0:
+                    setattr(facts.manhours, role, 0.0)
+                elif val > 10000.0:
+                    logger.warning(f"Extracted manhour for '{role}' ({val}h) exceeds cap of 10000h; capping to 10000h.")
+                    setattr(facts.manhours, role, 10000.0)
+
+    return facts
+
+
 def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
     """
     Extracts structured facts from email text using the Gemini API and Pydantic validation.
-    Catches API, Auth, and Network exceptions gracefully and returns an EmailExtraction object
-    with structured error metadata to prevent raw tracebacks in UI.
+    Applies rate limiting, prompt injection filtering, and semantic bounds checking.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        print("[!] Warning: GEMINI_API_KEY is not set in extract.py.")
+        logger.warning("GEMINI_API_KEY is not set in environment.")
         return EmailExtraction(
             is_valid=False,
             error_type="missing_api_key",
             error_message="GEMINI_API_KEY is not configured in environment variables or .env file."
         )
+
+    # Sanitize input against prompt injection
+    cleaned_email_text = sanitize_input_text(email_text)
+
+    # Enforce API rate limiter
+    gemini_rate_limiter.acquire()
 
     client = genai.Client()
     
@@ -113,7 +178,6 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
        - avionics_design_engineer
        - certification_engineer
        - project_manager
-       Note: Map the text descriptions to these precise database role keys.
     7. Assess if the email is a valid aviation modification request. If it is spam, marketing, catering, or completely unrelated to modifying an aircraft, set `is_valid` to false.
     """
 
@@ -129,24 +193,24 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
         try:
             response = client.models.generate_content(
                 model='gemini-3.1-flash-lite',
-                contents=email_text,
+                contents=cleaned_email_text,
                 config=config
             )
             if response.parsed:
-                return response.parsed
+                return validate_semantic_bounds(response.parsed)
             else:
                 data = json.loads(response.text)
-                return EmailExtraction(**data)
+                return validate_semantic_bounds(EmailExtraction(**data))
         except Exception as e:
             last_exception = e
             err_str = str(e)
-            print(f"[!] Extraction attempt {attempt+1} failed: {e}")
+            logger.warning(f"Extraction attempt {attempt+1} failed: {e}")
             if attempt < max_retries - 1:
                 sleep_time = 5 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) else (2 ** attempt)
-                print(f"[!] Waiting {sleep_time} seconds before retrying...")
+                logger.info(f"Waiting {sleep_time} seconds before retrying Gemini request...")
                 time.sleep(sleep_time)
 
-    # All retries failed - return user-friendly structured error model instead of raising raw traceback
+    # All retries failed
     err_msg = str(last_exception) if last_exception else "Unknown error"
     if any(k in err_msg for k in ["429", "RESOURCE_EXHAUSTED", "Quota", "quota"]):
         return EmailExtraction(
@@ -167,8 +231,6 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
             error_message=f"Gemini API request failed after {max_retries} attempts: {err_msg}"
         )
 
-    return EmailExtraction(is_valid=False)
-
 
 @functools.lru_cache(maxsize=64)
 def _extract_facts_cached_raw(email_text: str) -> str:
@@ -181,24 +243,3 @@ def extract_facts_cached(email_text: str) -> EmailExtraction:
     """Cached wrapper around extract_facts using lru_cache for zero-cost repeated queries."""
     json_str = _extract_facts_cached_raw(email_text)
     return EmailExtraction.model_validate_json(json_str)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python src/extract.py <path_to_email_txt>")
-        sys.exit(1)
-
-    file_path = sys.argv[1]
-    if not os.path.exists(file_path):
-        print(f"File not found: {file_path}")
-        sys.exit(1)
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        email_content = f.read()
-
-    try:
-        facts = extract_facts(email_content)
-        print(facts.model_dump_json(indent=2))
-    except Exception as err:
-        print(f"Error during extraction: {err}")
-        sys.exit(1)

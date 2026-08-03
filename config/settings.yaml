@@ -1,0 +1,35 @@
+# TEKLİF-Sim v2.1.0 Configuration File
+# EASA Part 21 DOA Engineering Baseline Parameters & Pricing Rules
+
+app:
+  name: "TEKLİF-Sim"
+  version: "2.1.0"
+  environment: "production"
+
+pricing:
+  hourly_rate_default: 120.00
+  contingency_default: 0.05
+  urgency_surcharges:
+    normal: 1.00
+    rush: 1.25
+    aog: 1.50
+
+volume_discounts:
+  tier_1:
+    min_fleet: 20
+    discount_rate: 0.05
+  tier_2:
+    min_fleet: 50
+    discount_rate: 0.10
+
+ewis_complexity_weights:
+  widebody: 1.40      # A330, A350, B777, B787
+  narrowbody: 1.00    # A320, B737
+  regional: 0.70      # King Air, ATR, Embraer
+
+rate_card_defaults:
+  cabin_design_engineer: 95.00
+  structural_engineer: 110.00
+  avionics_design_engineer: 105.00
+  certification_engineer: 80.00
+  project_manager: 120.00

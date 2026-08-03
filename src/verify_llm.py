@@ -1,9 +1,13 @@
 import os
 import sys
-from google import genai
 from dotenv import load_dotenv
 
-def test_connection():
+# Add project root directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from google import genai
+
+def verify_connection():
     # Load .env file
     load_dotenv()
     
@@ -31,5 +35,6 @@ def test_connection():
         return False
 
 if __name__ == "__main__":
-    success = test_connection()
+    success = verify_connection()
     sys.exit(0 if success else 1)
+

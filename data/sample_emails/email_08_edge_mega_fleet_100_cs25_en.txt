@@ -1,0 +1,25 @@
+From: procurement@transatlanticair.com
+To: proposals@aerodesign.com
+Date: Tue, 28 Jul 2026 14:30:00 +0300
+Subject: RFP: Mega Fleet 100x Airbus A320-200 In-Seat Power Supply (ISPS) Modernization STC
+
+Dear AeroDesign Engineering Team,
+
+TransAtlantic Airways is launching an extensive fleet-wide modernization program for our entire fleet of 100 Airbus A320-200 aircraft.
+
+Program Specifications:
+- Aircraft Model: Airbus A320-200 (CS-25 Transport Category Aeroplane)
+- Fleet Quantity: 100 aircraft (Mega Fleet Commitment)
+- Customer Account: TransAtlantic Airways (Flagship Account)
+- Modification Type: ISPS (In-Seat Power Supply - 110V AC / USB-C High Power Outlets)
+- Safety & EWIS: ARP4761 FHA/SSA assigning DAL C (Major) to cabin power distribution; CS 25.1707 EWIS routing required.
+- Scope: Turnkey STC approval package, Seat Power Box installation drawings, EWIS wiring diagrams, ELA report, and ICA folder.
+
+We request your DOA Engine to calculate baseline engineering hours, apply the maximum Wright 80% learning curve amortization for 100 aircraft, and apply the 10% volume discount for large fleet commitments.
+
+Best regards,
+
+Jonathan Sterling
+VP of Engineering & Maintenance
+TransAtlantic Airways
+j.sterling@transatlanticair.com

@@ -5,6 +5,32 @@ All notable changes to the **TEKLİF-Sim** project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - Future Roadmap
+
+### Planned Features
+- **PDF/Word Proposal Export:** Native PDF/Word document generation using `reportlab` or `python-docx`.
+- **Database & Persistence Layer:** SQLite/PostgreSQL integration for historical proposal tracking and CRM lookup.
+- **FastAPI REST Service Layer:** Exposing `src/pricing.py` and `src/estimation.py` as REST endpoints for ERP/SAP integration.
+- **Monte-Carlo Confidence Intervals:** P10/P50/P90 cost range analysis for risk engineering.
+- **Rotorcraft Support (CS-27/CS-29):** Helicopter certification basis and baseline estimation models.
+- **Multi-Currency Support:** EUR, GBP, and TRY conversion with regional VAT/tax calculation.
+
+---
+
+## [2.1.0] - 2026-08-03
+
+### Added & Enhanced
+- **YAML Configuration Loader (`config/settings.yaml` & `src/config.py`):** Externalized baseline pricing rules, rate cards, and complexity weights into YAML config.
+- **GitHub Actions CI/CD Pipeline (`.github/workflows/ci.yml`):** Automated test workflow testing Python 3.10 through 3.13.
+- **Dependency Locking (`requirements-lock.txt`):** Pinned production dependency versions for repeatable deployment.
+- **Centralized Structured Logging (`src/logger.py`):** Added logging to console and `logs/teklif_sim.log` file.
+- **Prompt Injection & Semantic Bounds Protection (`src/extract.py`):** Added regex marker filtering against prompt overrides and semantic caps on fleet size (500 max) and role manhours (10,000h max).
+- **Sliding Window API Rate Limiter (`src/rate_limiter.py`):** Implemented token bucket rate limiter preventing Gemini API 429 quota exhaustion.
+- **Parametric EWIS Aircraft Complexity Model (`src/estimation.py`):** Scaled EWIS wiring hours by aircraft body category (Widebody=1.4x, Narrowbody=1.0x, Regional=0.7x).
+- **Expanded Test Suite (`tests/test_v210_features.py`):** Added 6 unit tests bringing total test count to **52/52 passing**.
+
+---
+
 ## [2.0.1] - 2026-07-28
 
 ### Fixed & Security
