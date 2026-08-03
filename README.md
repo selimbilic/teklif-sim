@@ -150,6 +150,11 @@ Arayüze tarayıcınızdan **http://localhost:8501** adresi üzerinden erişebil
 * **ADR-06: DO-178C / ARP4761 5 Kademeli Emniyet Çarpanları:** Yazılım ve sistem emniyet maliyetleri keyfi oranlar yerine doğrudan DO-178C Ek A doğrulama hedeflerine oranlanmıştır: DAL A (2.4x - 71 hedef), DAL B (2.0x - 69 hedef), DAL C (1.5x - 62 hedef), DAL D (1.15x - 26 hedef), DAL E (1.0x - 0 hedef).
 * **ADR-07: Streamlit Action Button Event Guarding:** Streamlit arayüzünde herhangi bir slider veya seçim kutusu değiştirildiğinde pahalı LLM çağrılarının gereksiz yere tekrar tetiklenmesini önlemek için LLM analizi `st.session_state` uyarınca sadece açık buton tıklamasına (`st.button`) bağlanmıştır.
 * **ADR-08: Clean-Room & Güvenlik Uyum Koruması:** KVKK/GDPR ve ticari sır mevzuatına uyum sağlamak için kod tabanında gerçek havayolu isimleri, müşteriye özel fiyat listeleri veya canlı API anahtarları kesinlikle barındırılmaz; AST statik analiz testleri (`test_compliance.py`) ile temiz-oda sınırı denetlenir.
+* **ADR-09: Harici Konfigürasyon Yönetimi (`config/settings.yaml` & `src/config.py`):** Baseline mühendislik parametreleri, saatlik ücretler ve EWIS katsayıları kod içerisine sabitlenmek yerine harici `config/settings.yaml` ve `src/config.py` modülüne taşınarak kod ile konfigürasyon ayrıştırılmıştır.
+* **ADR-10: Gemini API Kota Yönetimi ve Sliding-Window Rate Limiting (`src/rate_limiter.py`):** LLM extraction işlemlerinin önüne sliding window algoritmalı `APIRateLimiter` konularak Gemini API 429 kota aşımları ve servis kesintileri engellenmiştir.
+* **ADR-11: LLM Girdi/Çıktı Güvenliği ve Semantik Sınır Koruması (`src/extract.py`):** Gelen e-posta metinlerine regex bazlı prompt injection filtresi (`sanitize_input_text`) uygulanmış, süzülen veriler semantik sınır denetimiyle (`validate_semantic_bounds`) maks 500 filo ve 10.000h işçilik ile kısıtlanmıştır.
+* **ADR-12: EWIS Parametrik Uçak Karmaşıklık Modeli (`src/estimation.py`):** CS 25.1707 EWIS kablolama analizi saatleri uçak gövde büyüklüğüne göre parametrik olarak ölçeklenmiştir (Widebody=1.4x, Narrowbody=1.0x, Regional=0.7x).
+
 
 ---
 
