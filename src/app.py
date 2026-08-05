@@ -14,6 +14,12 @@ import src.extract
 import src.gaps
 import src.draft_email
 import src.summarize
+import src.parser
+import src.privacy
+import src.forex
+import src.database
+import src.simulation
+import src.export
 import src.__version__
 
 importlib.reload(src.estimation)
@@ -22,6 +28,12 @@ importlib.reload(src.extract)
 importlib.reload(src.gaps)
 importlib.reload(src.draft_email)
 importlib.reload(src.summarize)
+importlib.reload(src.parser)
+importlib.reload(src.privacy)
+importlib.reload(src.forex)
+importlib.reload(src.database)
+importlib.reload(src.simulation)
+importlib.reload(src.export)
 importlib.reload(src.__version__)
 
 from src.extract import extract_facts, extract_facts_cached
@@ -29,6 +41,12 @@ from src.gaps import check_gaps, get_field_description
 from src.draft_email import draft_clarification_email
 from src.pricing import calculate_quote, load_data_files, get_urgency_surcharge
 from src.summarize import generate_proposal_summary
+from src.parser import parse_uploaded_file
+from src.privacy import anonymize_text
+from src.forex import convert_currency, format_currency, fetch_ecb_rates
+from src.database import save_proposal, list_proposals
+from src.simulation import run_monte_carlo_simulation
+from src.export import generate_pdf_proposal, generate_docx_proposal
 from src.__version__ import __version__
 from src.estimation import resolve_cert_basis, classify_part21_change
 
@@ -217,19 +235,38 @@ st.markdown(f"""
 col_input, col_dashboard = st.columns([1, 1])
 
 with col_input:
-    st.markdown("##### 📧 Customer Request Email")
+    st.markdown("##### 📥 Customer Request Input & Document Upload")
+    
+    uploaded_files = st.file_uploader(
+        "Upload RFP Documents, Specifications, LOPA or Fleet Lists (PDF, XLSX, DOCX, TXT):",
+        type=["pdf", "xlsx", "xls", "docx", "txt", "png", "jpg", "jpeg"],
+        accept_multiple_files=True,
+        key="rfp_file_uploader"
+    )
     
     email_input = st.text_area(
-        "Paste the customer's modification inquiry email below:",
+        "Paste customer email / RFP request text below:",
         value="",
-        height=240,
-        placeholder="Paste customer email text here...",
+        height=180,
+        placeholder="Paste customer email text or RFP details here...",
         key="main_email_textarea"
     )
-    st.caption("🔒 **Privacy & Data Security Notice:** This system uses public Gemini API for extraction. Do NOT input confidential or personal customer data. Use synthetic data only.")
+
+    # Process uploaded documents
+    parsed_doc_text = ""
+    if uploaded_files:
+        parsed_parts = []
+        for file in uploaded_files:
+            file_bytes = file.read()
+            text_content = parse_uploaded_file(file.name, file_bytes)
+            parsed_parts.append(f"=== ATTACHMENT: {file.name} ===\n{text_content}")
+        parsed_doc_text = "\n\n".join(parsed_parts)
+        st.info(f"📎 **{len(uploaded_files)} file(s) attached & parsed.** (PDF / Excel / Word / Text)")
+
+    st.caption("🔒 **Privacy & Local Security Notice:** PII data is automatically anonymized locally via Microsoft Presidio before sending to Gemini Pro API.")
 
     st.markdown("##### ⚙️ Configuration:")
-    cfg_col1, cfg_col2 = st.columns(2)
+    cfg_col1, cfg_col2, cfg_col3 = st.columns(3)
     
     with cfg_col1:
         pricing_strategy = st.selectbox(
@@ -239,6 +276,13 @@ with col_input:
             key="sb_pricing_strategy"
         )
     with cfg_col2:
+        selected_currency = st.selectbox(
+            "Currency",
+            options=["USD", "EUR", "GBP", "TRY"],
+            index=0,
+            key="sb_currency"
+        )
+    with cfg_col3:
         draft_lang = st.radio(
             "Reply Language",
             options=["TR", "EN"],
@@ -251,7 +295,11 @@ with col_input:
 with col_dashboard:
     st.markdown("##### 📊 Executive Dashboard")
     
-    clean_email = email_input.strip()
+    combined_input = email_input.strip()
+    if parsed_doc_text:
+        combined_input = f"{combined_input}\n\n{parsed_doc_text}".strip()
+        
+    clean_email = combined_input
     is_new_click = bool(analyze_click and clean_email)
     is_already_analyzed = bool(st.session_state.get("analyzed_email") == clean_email and clean_email)
     
@@ -328,9 +376,35 @@ with col_dashboard:
                 mh_source = base_quote["manhour_source"]
                 total_hours = sum([v for v in mh_used.values() if v is not None])
                 margin_pct_str = f"{base_quote['margin_applied']*100:.1f}%"
-                total_quote_str = f"${base_quote['total_cost']:,.2f}"
+                
+                # Currency conversion
+                total_usd = base_quote['total_cost']
+                converted_val = convert_currency(total_usd, selected_currency)
+                total_quote_str = format_currency(converted_val, selected_currency)
                 quote_color = "#c8102e"
                 urgency_mult = base_quote.get("urgency_multiplier", 1.0)
+
+                # Save proposal to Database
+                try:
+                    save_proposal(
+                        customer_name=facts.customer_name,
+                        customer_class=c_class,
+                        aircraft_type=facts.aircraft_type,
+                        fleet_size=fleet_sz,
+                        modification_type=facts.modification_type,
+                        pricing_strategy=pricing_strategy,
+                        currency=selected_currency,
+                        total_manhours=total_hours,
+                        labor_cost=base_quote.get("base_labor_cost_adjusted", 0.0),
+                        contingency_cost=base_quote.get("contingency", 0.0),
+                        materials_cost=base_quote.get("material_allowance", 0.0),
+                        testing_cost=base_quote.get("testing_fee", 0.0),
+                        total_price_usd=total_usd,
+                        total_price_converted=converted_val,
+                        deterministic_hash=base_quote.get("deterministic_hash", "N/A")
+                    )
+                except Exception as e:
+                    pass
             else:
                 base_quote = None
                 mh_used = {}
@@ -359,14 +433,14 @@ with col_dashboard:
             with kpi3:
                 st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">Margin</div>
+                    <div class="metric-label">Margin ({selected_currency})</div>
                     <div class="metric-value">{margin_pct_str}</div>
                 </div>
                 """, unsafe_allow_html=True)
             with kpi4:
                 st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">Total Quote</div>
+                    <div class="metric-label">Total Quote ({selected_currency})</div>
                     <div class="metric-value" style="color:{quote_color};">{total_quote_str}</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -532,6 +606,17 @@ with col_dashboard:
                     </div>
                     """, unsafe_allow_html=True)
 
+                    st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
+                    st.markdown("###### 🎲 Monte-Carlo Risk Engineering & Confidence Intervals (1,000 Iterations):")
+                    sim = run_monte_carlo_simulation(total_hours, final_total, complexity=complexity_val)
+                    m1, m2, m3 = st.columns(3)
+                    with m1:
+                        st.metric("P10 (Optimistic)", f"${sim['p10']['cost']:,.2f}", f"{sim['p10']['manhours']:.0f} hrs")
+                    with m2:
+                        st.metric("P50 (Expected)", f"${sim['p50']['cost']:,.2f}", f"{sim['p50']['manhours']:.0f} hrs")
+                    with m3:
+                        st.metric("P90 (Conservative)", f"${sim['p90']['cost']:,.2f}", f"{sim['p90']['manhours']:.0f} hrs")
+
             # TAB 3: Proposal Summary Document
             with tab_summary:
                 if gaps:
@@ -563,13 +648,67 @@ with col_dashboard:
                     )
                 
                 st.markdown(summary_text)
-                st.download_button(
-                    label="📥 Download Proposal Summary (.md)",
-                    data=summary_text,
-                    file_name="proposal_summary.md",
-                    mime="text/markdown"
-                )
+
+                # Export Download Buttons (PDF, Word, Markdown)
+                st.markdown("---")
+                st.markdown("##### 📥 Export Official Proposal Document:")
+                exp_col1, exp_col2, exp_col3 = st.columns(3)
+                
+                proposal_export_payload = {
+                    "customer_name": facts.customer_name,
+                    "aircraft_type": facts.aircraft_type,
+                    "fleet_size": facts.fleet_size,
+                    "modification_type": facts.modification_type,
+                    "currency": selected_currency,
+                    "scope_text": facts.scope,
+                    "total_price_usd": final_total,
+                    "total_price_formatted": format_currency(convert_currency(final_total, selected_currency), selected_currency),
+                    "quote_breakdown": {
+                        "base_labor_cost_adjusted": base_labor_adj,
+                        "contingency": contingency,
+                        "material_allowance": materials,
+                        "testing_fee": testing,
+                        "volume_discount": vol_disc,
+                        "volume_discount_rate": vol_disc_rate
+                    },
+                    "p10_p50_p90": sim if not gaps else None
+                }
+                
+                with exp_col1:
+                    st.download_button(
+                        label="📄 Download PDF Proposal",
+                        data=generate_pdf_proposal(proposal_export_payload),
+                        file_name=f"proposal_{facts.aircraft_type or 'quote'}.pdf",
+                        mime="application/pdf",
+                        key="btn_dl_pdf"
+                    )
+                with exp_col2:
+                    st.download_button(
+                        label="📝 Download Word Proposal",
+                        data=generate_docx_proposal(proposal_export_payload),
+                        file_name=f"proposal_{facts.aircraft_type or 'quote'}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="btn_dl_docx"
+                    )
+                with exp_col3:
+                    st.download_button(
+                        label="📥 Download Markdown Summary",
+                        data=summary_text,
+                        file_name="proposal_summary.md",
+                        mime="text/markdown",
+                        key="btn_dl_md"
+                    )
     elif clean_email:
-        st.info("👈 Click **🔍 Analyze & Calculate Proposal** to process this modification inquiry.")
+        st.info("👈 Click the **Analyze & Calculate Proposal** button to extract request facts and compute pricing.")
+
+# Database Proposal History & CRM Lookup Section
+st.markdown("---")
+with st.expander("🗄️ Database Proposal History & CRM Lookup (Saved Quotes)", expanded=False):
+    st.markdown("###### Saved Proposal Quotes History (SQLite / PostgreSQL)")
+    search_q = st.text_input("🔍 Search proposals by Customer, Aircraft, ID, or Mod Type:", key="db_search_input")
+    records = list_proposals(limit=20, search_query=search_q.strip() if search_q else None)
+    if records:
+        df_rec = pd.DataFrame(records)
+        st.dataframe(df_rec, use_container_width=True)
     else:
-        st.info("👈 Paste a customer inquiry email on the left to begin analysis.")
+        st.caption("No proposals found in database history.")

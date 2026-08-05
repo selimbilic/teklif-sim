@@ -5,15 +5,18 @@ All notable changes to the **TEKLİF-Sim** project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - Future Roadmap
+## [3.0.0] - 2026-08-05
 
-### Planned Features
-- **PDF/Word Proposal Export:** Native PDF/Word document generation using `reportlab` or `python-docx`.
-- **Database & Persistence Layer:** SQLite/PostgreSQL integration for historical proposal tracking and CRM lookup.
-- **FastAPI REST Service Layer:** Exposing `src/pricing.py` and `src/estimation.py` as REST endpoints for ERP/SAP integration.
-- **Monte-Carlo Confidence Intervals:** P10/P50/P90 cost range analysis for risk engineering.
-- **Rotorcraft Support (CS-27/CS-29):** Helicopter certification basis and baseline estimation models.
-- **Multi-Currency Support:** EUR, GBP, and TRY conversion with regional VAT/tax calculation.
+### Added & Enhanced (%100 Free Enterprise Release)
+- **Multimodal Document Upload & Parsing (`src/parser.py`):** Added UI drag-and-drop file ingestion supporting PDF, Excel, Word, and Text documents via `pdfplumber`, `pypdf`, `python-docx`, and `openpyxl`.
+- **Local PII & Privacy Anonymization (`src/privacy.py`):** Integrated Microsoft Presidio and regex sanitization layer to scrub personal and airline sensitive data locally on CPU before sending payloads to Gemini Pro.
+- **Gemini Pro Multimodal Engine (`src/extract.py`):** Enhanced extraction with Gemini Pro model support and 1M-2M token context ingestion.
+- **Free FX Currency Engine (`src/forex.py`):** Integrated official European Central Bank (ECB) and TCMB public XML feeds supporting live USD, EUR, GBP, and TRY conversion with zero API fees.
+- **Relational Persistence Layer (`src/database.py`):** Built SQLAlchemy ORM database layer (SQLite / PostgreSQL) to automatically save proposals and enable CRM history search.
+- **FastAPI Enterprise REST API (`src/api.py`):** Exposed `/health`, `/api/v1/extract`, `/api/v1/quote`, `/api/v1/simulate`, `/api/v1/export/pdf`, `/api/v1/export/docx`, and `/api/v1/proposals` endpoints for SAP/ERP & CRM integration.
+- **Monte-Carlo Risk Simulation Engine (`src/simulation.py`):** Implemented 1,000-run Monte-Carlo simulation calculating P10 (Optimistic), P50 (Expected), and P90 (Conservative) confidence intervals.
+- **Corporate PDF & Word Exporter (`src/export.py`):** Built ReportLab PDF and python-docx Word proposal document generator in official EASA Part 21 format.
+- **Expanded Test Suite (`tests/test_v300_*.py`):** Added 16 new unit and integration tests bringing test suite to **68/68 passing**.
 
 ---
 

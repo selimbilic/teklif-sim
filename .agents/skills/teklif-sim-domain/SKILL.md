@@ -38,3 +38,8 @@ When a client email arrives:
 When acting within this domain:
 - **Never guess or assume client details:** If the aircraft fleet size or model is vague (e.g. "our fleet"), flag it as a gap.
 - **Push back on ambiguity:** If a request is completely irrelevant (e.g., catering), label it invalid instead of forcing a proposal.
+
+## 4. Scope & Certification Constraints
+
+- **Supported Certification Standards:** Fixed-wing aircraft certifications ONLY (`CS-25` Large Aeroplanes and `CS-23` Normal/Utility Aeroplanes).
+- **Excluded Scope:** Helikopter / Rotorcraft certifications (`CS-27` / `CS-29`) are explicitly **EXCLUDED** from the project roadmap and estimation scope. We operate strictly with current fixed-wing CS standards.

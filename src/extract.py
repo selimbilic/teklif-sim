@@ -138,10 +138,12 @@ def validate_semantic_bounds(facts: EmailExtraction) -> EmailExtraction:
     return facts
 
 
+from src.privacy import anonymize_text
+
 def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
     """
     Extracts structured facts from email text using the Gemini API and Pydantic validation.
-    Applies rate limiting, prompt injection filtering, and semantic bounds checking.
+    Applies local PII anonymization, rate limiting, prompt injection filtering, and semantic bounds.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -154,14 +156,19 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
 
     # Sanitize input against prompt injection
     cleaned_email_text = sanitize_input_text(email_text)
+    
+    # Apply local PII anonymization
+    anonymized_text = anonymize_text(cleaned_email_text)
 
     # Enforce API rate limiter
     gemini_rate_limiter.acquire()
 
     client = genai.Client()
-    
+    primary_model = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+    candidate_models = list(dict.fromkeys([primary_model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-3.1-flash-lite"]))
+
     system_instruction = """
-    You are an expert aviation proposal engineer. Your task is to analyze the customer's request email and extract structured facts.
+    You are an expert aviation proposal engineer. Your task is to analyze the customer's request email and uploaded documents to extract structured facts.
 
     Guidelines:
     1. Identify the aircraft model (e.g., A320, B737-800, B777-300ER).
@@ -190,10 +197,11 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
 
     last_exception = None
     for attempt in range(max_retries):
+        target_model = candidate_models[attempt % len(candidate_models)]
         try:
             response = client.models.generate_content(
-                model='gemini-3.1-flash-lite',
-                contents=cleaned_email_text,
+                model=target_model,
+                contents=anonymized_text,
                 config=config
             )
             if response.parsed:
@@ -204,9 +212,9 @@ def extract_facts(email_text: str, max_retries: int = 3) -> EmailExtraction:
         except Exception as e:
             last_exception = e
             err_str = str(e)
-            logger.warning(f"Extraction attempt {attempt+1} failed: {e}")
+            logger.warning(f"Extraction attempt {attempt+1} using model '{target_model}' failed: {e}")
             if attempt < max_retries - 1:
-                sleep_time = 5 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) else (2 ** attempt)
+                sleep_time = 3 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) else 1
                 logger.info(f"Waiting {sleep_time} seconds before retrying Gemini request...")
                 time.sleep(sleep_time)
 
